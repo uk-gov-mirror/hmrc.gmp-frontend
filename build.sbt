@@ -1,6 +1,5 @@
 import scoverage.ScoverageKeys._
 import uk.gov.hmrc.DefaultBuildSettings.{defaultSettings, scalaSettings}
-import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
 
 val appName = "gmp-frontend"
 
@@ -36,7 +35,6 @@ lazy val microservice = Project(appName, file("."))
   .enablePlugins(plugins: _*)
   .settings(
     scoverageSettings,
-    publishingSettings,
     scalaSettings,
     defaultSettings(),
     majorVersion := 4,
