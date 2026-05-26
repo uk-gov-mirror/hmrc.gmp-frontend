@@ -36,7 +36,7 @@ class ContributionsEarningsSpec extends GmpViewSpec {
   "Contributions Earnings page" must {
     behave like pageWithTitle(messages("gmp.contributions_earnings.header"))
     behave like pageWithHeader(messages("gmp.contributions_earnings.header"))
-    behave like pageWithH2Header(messages("gmp.entered_details.title"))
+    behave like pageWithH3Header(messages("gmp.entered_details.title"))
 
 
     "have a valid back link" in {

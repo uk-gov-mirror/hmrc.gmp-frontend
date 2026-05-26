@@ -76,6 +76,12 @@ trait GmpViewSpec extends PlaySpec with JSoupMatchers with GuiceOneServerPerSuit
     }
   }
 
+  def pageWithH3Header(headerText: String): Unit = {
+    s"have a static h3 header with text: $headerText" in {
+      doc must haveHeadingH3WithText(headerText)
+    }
+  }
+
   def pageWithButtonForm(submitUrl: String, buttonText: String): Unit = {
     "have a form with a submit button or input labelled as buttonText" in {
       doc must haveSubmitButton(buttonText)
