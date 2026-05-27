@@ -26,38 +26,36 @@ import utils.GmpViewSpec
 import views.ViewHelpers
 
 class InflationProofSpec extends GmpViewSpec {
-  lazy val layout = app.injector.instanceOf[views.html.Layout]
-  lazy val viewHelpers = app.injector.instanceOf[ViewHelpers]
-  lazy val govukButton = app.injector.instanceOf[GovukButton]
-  lazy val govukRadios = app.injector.instanceOf[GovukRadios]
+  lazy val layout            = app.injector.instanceOf[views.html.Layout]
+  lazy val viewHelpers       = app.injector.instanceOf[ViewHelpers]
+  lazy val govukButton       = app.injector.instanceOf[GovukButton]
+  lazy val govukRadios       = app.injector.instanceOf[GovukRadios]
   lazy val govukErrorSummary = app.injector.instanceOf[GovukErrorSummary]
-  lazy val govukDateInput = app.injector.instanceOf[GovukDateInput]
+  lazy val govukDateInput    = app.injector.instanceOf[GovukDateInput]
 
-  override def view: Html = new views.html.inflation_proof(layout, viewHelpers, govukRadios, govukButton, govukErrorSummary, govukDateInput)(inflationProofForm)
+  override def view: Html =
+    new views.html.inflation_proof(layout, viewHelpers, govukRadios, govukButton, govukErrorSummary, govukDateInput)(inflationProofForm)
 
   val inflationProofForm = Form(
     mapping(
       "revaluationDate" -> mapping(
-        "day" -> optional(text),
+        "day"   -> optional(text),
         "month" -> optional(text),
-        "year" -> optional(text)
-      )(GmpDate.apply)((gmpDate: GmpDate)=> Some(gmpDate.day, gmpDate.month, gmpDate.year))
+        "year"  -> optional(text)
+      )(GmpDate.apply)((gmpDate: GmpDate) => Some(gmpDate.day, gmpDate.month, gmpDate.year))
         .verifying(messages("gmp.error.date.nonnumber"), x => checkForNumber(x.day) && checkForNumber(x.month) && checkForNumber(x.year))
         .verifying(messages("gmp.error.day.invalid"), x => checkDayRange(x.day))
         .verifying(messages("gmp.error.month.invalid"), x => checkMonthRange(x.month))
-        .verifying(messages("gmp.error.year.invalid.format"), x => checkYearLength(x.year))
-      ,
-      "revaluate" -> optional(text).verifying(messages("revaluate.error.required"),{_.isDefined})
+        .verifying(messages("gmp.error.year.invalid.format"), x => checkYearLength(x.year)),
+      "revaluate" -> optional(text).verifying(messages("revaluate.error.required"), _.isDefined)
     )(InflationProof.apply)((ip: InflationProof) => Some(ip.revaluationDate, ip.revaluate))
       .verifying(messages("gmp.error.reval_date.mandatory"), x => dateMustBePresentIfRevaluationWanted(x))
-
   )
-  def dateMustBePresentIfRevaluationWanted(x: InflationProof): Boolean = {
+  def dateMustBePresentIfRevaluationWanted(x: InflationProof): Boolean =
     x.revaluate match {
       case Some("Yes") => x.revaluationDate.day.isDefined || x.revaluationDate.month.isDefined || x.revaluationDate.year.isDefined
-      case _ => true
+      case _           => true
     }
-  }
   "Inflation Proof page" must {
     behave like pageWithTitle(messages("gmp.inflation_proof.question"))
     behave like pageWithHeader(messages("gmp.inflation_proof.question"))

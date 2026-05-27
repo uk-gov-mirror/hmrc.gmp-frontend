@@ -20,9 +20,9 @@ import config.{ApplicationConfig, GmpSessionCache}
 import controllers.auth.{AuthAction, FakeAuthAction}
 import forms.ScenarioForm
 import helpers.RandomNino
-import models._
+import models.*
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito._
+import org.mockito.Mockito.*
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
@@ -30,7 +30,7 @@ import org.scalatestplus.play.PlaySpec
 import play.api.i18n.{Lang, Messages, MessagesApi, MessagesImpl}
 import play.api.mvc.{AnyContentAsEmpty, MessagesControllerComponents, Result}
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import services.GMPSessionService
 import uk.gov.hmrc.auth.core.AuthConnector
 import views.Views
@@ -39,23 +39,36 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class ScenarioControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with ScalaFutures {
 
-  val mockAuthConnector = mock[AuthConnector]
+  val mockAuthConnector     = mock[AuthConnector]
   val mockGMPSessionService = mock[GMPSessionService]
-  val mockAuthAction = mock[AuthAction]
+  val mockAuthAction        = mock[AuthAction]
 
-  implicit val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
-  implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
-  implicit val messagesAPI: MessagesApi = app.injector.instanceOf[MessagesApi]
-  implicit val messagesProvider: MessagesImpl = MessagesImpl(Lang("en"), messagesAPI)
-  implicit val ac: ApplicationConfig = app.injector.instanceOf[ApplicationConfig]
-  implicit val gmpSessionCache: GmpSessionCache = app.injector.instanceOf[GmpSessionCache]
+  implicit val mcc:              MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
+  implicit val ec:               ExecutionContext             = app.injector.instanceOf[ExecutionContext]
+  implicit val messagesAPI:      MessagesApi                  = app.injector.instanceOf[MessagesApi]
+  implicit val messagesProvider: MessagesImpl                 = MessagesImpl(Lang("en"), messagesAPI)
+  implicit val ac:               ApplicationConfig            = app.injector.instanceOf[ApplicationConfig]
+  implicit val gmpSessionCache:  GmpSessionCache              = app.injector.instanceOf[GmpSessionCache]
   lazy val scenarioForm = new ScenarioForm(mcc)
-  lazy val views = app.injector.instanceOf[Views]
+  lazy val views        = app.injector.instanceOf[Views]
 
-  object TestScenarioController extends ScenarioController(FakeAuthAction, mockAuthConnector,ac,mockGMPSessionService,FakeGmpContext,mcc,scenarioForm,ec,gmpSessionCache,views)
+  object TestScenarioController
+      extends ScenarioController(
+        FakeAuthAction,
+        mockAuthConnector,
+        ac,
+        mockGMPSessionService,
+        FakeGmpContext,
+        mcc,
+        scenarioForm,
+        ec,
+        gmpSessionCache,
+        views
+      )
 
   private val nino: String = RandomNino.generate
-  val gmpSession = GmpSession(MemberDetails(nino, "A", "AAA"), "S1301234T", CalculationType.REVALUATION, None, None, Leaving(GmpDate(None, None, None), None), None)
+  val gmpSession =
+    GmpSession(MemberDetails(nino, "A", "AAA"), "S1301234T", CalculationType.REVALUATION, None, None, Leaving(GmpDate(None, None, None), None), None)
   val emptySession = GmpSession(MemberDetails("", "", ""), "", "", None, None, Leaving(GmpDate(None, None, None), None), None)
 
   "ScenarioController GET" must {
@@ -63,43 +76,43 @@ class ScenarioControllerSpec extends PlaySpec with GuiceOneServerPerSuite with M
     "respond with ok" in {
       when(mockGMPSessionService.fetchGmpSession()(using any())).thenReturn(Future.successful(Some(gmpSession)))
       val result = TestScenarioController.get(FakeRequest())
-          status(result) must equal(OK)
-          contentAsString(result) must include(Messages("gmp.scenarios.title"))
+      status(result)          must equal(OK)
+      contentAsString(result) must include(Messages("gmp.scenarios.title"))
     }
 
     "return the correct scenarios" in {
       when(mockGMPSessionService.fetchGmpSession()(using any())).thenReturn(Future.successful(Some(gmpSession)))
       val result = TestScenarioController.get(FakeRequest())
-          status(result) must equal(OK)
-          contentAsString(result) must include(Messages("gmp.scenarios.payable_age"))
-          contentAsString(result) must include(Messages("gmp.scenarios.spa"))
-          contentAsString(result) must include(Messages("gmp.scenarios.survivor"))
-          contentAsString(result) must include(Messages("gmp.scenarios.leaving"))
-          contentAsString(result) must include(Messages("gmp.scenarios.specific_date"))
-          contentAsString(result) must include(Messages("gmp.back.link"))
+      status(result)          must equal(OK)
+      contentAsString(result) must include(Messages("gmp.scenarios.payable_age"))
+      contentAsString(result) must include(Messages("gmp.scenarios.spa"))
+      contentAsString(result) must include(Messages("gmp.scenarios.survivor"))
+      contentAsString(result) must include(Messages("gmp.scenarios.leaving"))
+      contentAsString(result) must include(Messages("gmp.scenarios.specific_date"))
+      contentAsString(result) must include(Messages("gmp.back.link"))
     }
 
     "go to failure page when session missing scon" in {
       when(mockGMPSessionService.fetchGmpSession()(using any())).thenReturn(Future.successful(Some(emptySession)))
-        val result = TestScenarioController.get(FakeRequest())
-        contentAsString(result).replaceAll("&#x27;", "'") must include (Messages("gmp.cannot_calculate.gmp"))
-        contentAsString(result) must include (Messages("gmp.error.session_parts_missing", "/guaranteed-minimum-pension/pension-details"))
+      val result = TestScenarioController.get(FakeRequest())
+      contentAsString(result).replaceAll("&#x27;", "'") must include(Messages("gmp.cannot_calculate.gmp"))
+      contentAsString(result) must include(Messages("gmp.error.session_parts_missing", "/guaranteed-minimum-pension/pension-details"))
     }
 
     "go to failure page when session missing member details" in {
-      when(mockGMPSessionService.fetchGmpSession()(using any())).thenReturn(Future.successful(Some(emptySession.copy(scon="S1234567T"))))
+      when(mockGMPSessionService.fetchGmpSession()(using any())).thenReturn(Future.successful(Some(emptySession.copy(scon = "S1234567T"))))
 
-        val result = TestScenarioController.get(FakeRequest())
-        contentAsString(result).replaceAll("&#x27;", "'") must include (Messages("gmp.cannot_calculate.gmp"))
-        contentAsString(result) must include (Messages("gmp.error.session_parts_missing", "/guaranteed-minimum-pension/member-details"))
+      val result = TestScenarioController.get(FakeRequest())
+      contentAsString(result).replaceAll("&#x27;", "'") must include(Messages("gmp.cannot_calculate.gmp"))
+      contentAsString(result) must include(Messages("gmp.error.session_parts_missing", "/guaranteed-minimum-pension/member-details"))
     }
 
     "go to failure page when no session" in {
       when(mockGMPSessionService.fetchGmpSession()(using any())).thenReturn(Future.successful(None))
 
-        val result = TestScenarioController.get(FakeRequest())
-        contentAsString(result).replaceAll("&#x27;", "'") must include (Messages("gmp.cannot_calculate.gmp"))
-        contentAsString(result) must include (Messages("gmp.error.session_parts_missing", "/guaranteed-minimum-pension/dashboard"))
+      val result = TestScenarioController.get(FakeRequest())
+      contentAsString(result).replaceAll("&#x27;", "'") must include(Messages("gmp.cannot_calculate.gmp"))
+      contentAsString(result) must include(Messages("gmp.error.session_parts_missing", "/guaranteed-minimum-pension/dashboard"))
     }
 
   }
@@ -108,22 +121,21 @@ class ScenarioControllerSpec extends PlaySpec with GuiceOneServerPerSuite with M
 
     "redirect when authorised" in {
       val memberDetails = MemberDetails("", "", "")
-      val session = GmpSession(memberDetails, "", "", None, None, Leaving(GmpDate(None, None, None), None), None)
+      val session       = GmpSession(memberDetails, "", "", None, None, Leaving(GmpDate(None, None, None), None), None)
 
-        when(mockGMPSessionService.fetchGmpSession()(using any())).thenReturn(Future.successful(Some(session)))
-        val result = TestScenarioController.back(FakeRequest())
-        status(result) must equal(SEE_OTHER)
+      when(mockGMPSessionService.fetchGmpSession()(using any())).thenReturn(Future.successful(Some(session)))
+      val result = TestScenarioController.back(FakeRequest())
+      status(result) must equal(SEE_OTHER)
     }
 
     "throw an exception when session not fetched" in {
 
-        when(mockGMPSessionService.fetchGmpSession()(using any())).thenReturn(Future.successful(None))
-        val result = TestScenarioController.back(FakeRequest())
-        intercept[RuntimeException] {
-          status(result)
+      when(mockGMPSessionService.fetchGmpSession()(using any())).thenReturn(Future.successful(None))
+      val result = TestScenarioController.back(FakeRequest())
+      intercept[RuntimeException] {
+        status(result)
       }
     }
-
 
   }
 
@@ -131,10 +143,10 @@ class ScenarioControllerSpec extends PlaySpec with GuiceOneServerPerSuite with M
 
     "respond with bad request must choose option" in {
 
-          val result = TestScenarioController.post(FakeRequest().withMethod("POST"))
+      val result = TestScenarioController.post(FakeRequest().withMethod("POST"))
 
-          status(result) must equal(BAD_REQUEST)
-          contentAsString(result) must include(Messages("gmp.error.scenario.mandatory"))
+      status(result)          must equal(BAD_REQUEST)
+      contentAsString(result) must include(Messages("gmp.error.scenario.mandatory"))
     }
 
     "redirect when a choice is made" in {
@@ -144,24 +156,31 @@ class ScenarioControllerSpec extends PlaySpec with GuiceOneServerPerSuite with M
 
 //      val validReason = Json.toJson(CalculationType(Some(CalculationType.DOL)))
 
-        val result = TestScenarioController.post(FakeRequest().withMethod("POST")
-          .withFormUrlEncodedBody("calcType" -> "0"))
-        status(result) mustBe(SEE_OTHER)
+      val result = TestScenarioController.post(
+        FakeRequest()
+          .withMethod("POST")
+          .withFormUrlEncodedBody("calcType" -> "0")
+      )
+      status(result) mustBe SEE_OTHER
     }
 
     "respond with exception when session cache fails" in {
       when(mockGMPSessionService.cacheScenario(any())(using any())).thenReturn(Future.successful(None))
 //      val validReason = Json.toJson(CalculationType(Some(CalculationType.DOL)))
-        intercept[RuntimeException]{
-          (TestScenarioController.post(FakeRequest().withMethod("POST")
-            .withFormUrlEncodedBody("calcType" -> "0")).futureValue)
+      intercept[RuntimeException] {
+        TestScenarioController
+          .post(
+            FakeRequest()
+              .withMethod("POST")
+              .withFormUrlEncodedBody("calcType" -> "0")
+          )
+          .futureValue
 
       }
     }
   }
 
-  def postCalculationReason(request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest())(handler: Future[Result] => Any): Unit = {
+  def postCalculationReason(request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest())(handler: Future[Result] => Any): Unit =
     handler(TestScenarioController.post(request))
-  }
 
 }

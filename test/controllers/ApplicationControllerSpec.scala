@@ -21,7 +21,7 @@ import config.ApplicationConfig
 import controllers.auth.{AuthAction, ExternalUrls, FakeAuthAction, UUIDGenerator}
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito._
+import org.mockito.Mockito.*
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar
@@ -29,7 +29,7 @@ import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc.MessagesControllerComponents
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import services.GMPSessionService
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
@@ -39,27 +39,34 @@ import views.Views
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class ApplicationControllerSpec extends PlaySpec
-  with GuiceOneServerPerSuite
-  with BeforeAndAfterEach
-  with ScalaFutures
-  with MockitoSugar {
+class ApplicationControllerSpec extends PlaySpec with GuiceOneServerPerSuite with BeforeAndAfterEach with ScalaFutures with MockitoSugar {
 
-  val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  val mockAuthConnector:  AuthConnector  = mock[AuthConnector]
   val mockAuditConnector: AuditConnector = mock[AuditConnector]
-  val mockUUIDGenerator: UUIDGenerator = mock[UUIDGenerator]
-  val mockAuthAction: AuthAction = mock[AuthAction]
+  val mockUUIDGenerator:  UUIDGenerator  = mock[UUIDGenerator]
+  val mockAuthAction:     AuthAction     = mock[AuthAction]
 
   implicit val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
-  implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
-  implicit val ac: ApplicationConfig = app.injector.instanceOf[ApplicationConfig]
-  implicit val ss: GMPSessionService = app.injector.instanceOf[GMPSessionService]
-  lazy val views = app.injector.instanceOf[Views]
+  implicit val ec:  ExecutionContext             = app.injector.instanceOf[ExecutionContext]
+  implicit val ac:  ApplicationConfig            = app.injector.instanceOf[ApplicationConfig]
+  implicit val ss:  GMPSessionService            = app.injector.instanceOf[GMPSessionService]
+  lazy val views        = app.injector.instanceOf[Views]
   lazy val externalUrls = app.injector.instanceOf[ExternalUrls]
 
-  object TestController extends ApplicationController(
-    FakeAuthAction, mockAuditConnector, mockAuthConnector, mockUUIDGenerator,
-    ss,FakeGmpContext,mcc,ec,ac, views, externalUrls) {}
+  object TestController
+      extends ApplicationController(
+        FakeAuthAction,
+        mockAuditConnector,
+        mockAuthConnector,
+        mockUUIDGenerator,
+        ss,
+        FakeGmpContext,
+        mcc,
+        ec,
+        ac,
+        views,
+        externalUrls
+      ) {}
 
   override def beforeEach(): Unit = {
     reset(mockAuditConnector, mockUUIDGenerator)
@@ -75,7 +82,6 @@ class ApplicationControllerSpec extends PlaySpec
         status(result) must be(OK)
       }
 
-
       "have some text on the page" in {
         val result = TestController.unauthorised(FakeRequest())
         contentAsString(result) must include("You are not authorised to view this page")
@@ -84,23 +90,23 @@ class ApplicationControllerSpec extends PlaySpec
 
     "get /signout" must {
       "redirect to feedback survey" in {
-          val result = TestController.signout(FakeRequest())
-          redirectLocation(result) must be(Some("http://localhost:9514/feedback/GMP"))
+        val result = TestController.signout(FakeRequest())
+        redirectLocation(result) must be(Some("http://localhost:9514/feedback/GMP"))
       }
 
       "send the data to splunk" in {
         when(mockUUIDGenerator.generate).thenReturn("test-uuid")
 
-          val result = TestController.signout(FakeRequest())
+        val result = TestController.signout(FakeRequest())
 
-          whenReady(result) { _ =>
-            val argument = ArgumentCaptor.forClass(classOf[DataEvent])
+        whenReady(result) { _ =>
+          val argument = ArgumentCaptor.forClass(classOf[DataEvent])
 
-            verify(mockAuditConnector, times(1)).sendEvent(argument.capture())(using any(), any())
+          verify(mockAuditConnector, times(1)).sendEvent(argument.capture())(using any(), any())
 
-            argument.getValue.auditSource mustBe "GMP"
-            argument.getValue.auditType mustBe "signout"
-            argument.getValue.detail mustBe Map("feedbackId" -> "test-uuid")
+          argument.getValue.auditSource mustBe "GMP"
+          argument.getValue.auditType mustBe "signout"
+          argument.getValue.detail mustBe Map("feedbackId" -> "test-uuid")
         }
       }
     }

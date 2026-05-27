@@ -17,7 +17,7 @@
 package models
 
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json._
+import play.api.libs.json.*
 import uk.gov.hmrc.crypto.EncryptedValue
 import uk.gov.hmrc.crypto.json.CryptoFormats
 import services.Encryption
@@ -25,14 +25,14 @@ import services.Encryption
 import java.time.Instant
 
 case class GMPBulkSessionCache(
-   id: String,
-   gmpBulkSession: GmpBulkSession,
-   lastModified: Instant = Instant.now()
+  id:             String,
+  gmpBulkSession: GmpBulkSession,
+  lastModified:   Instant = Instant.now()
 )
 
 object GMPBulkSessionCache {
   object MongoFormats {
-    import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats.Implicits._
+    import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats.Implicits.*
     implicit val cryptEncryptedValueFormats: Format[EncryptedValue] = CryptoFormats.encryptedValueFormat
 
     def reads()(implicit encryption: Encryption): Reads[GMPBulkSessionCache] =
@@ -40,7 +40,7 @@ object GMPBulkSessionCache {
         (__ \ "id").read[String] and
           (__ \ "gmpBulkSession").read[EncryptedValue] and
           (__ \ "lastModified").read[Instant]
-        )(ModelEncryption.decryptSessionCache)
+      )(ModelEncryption.decryptSessionCache)
 
     def writes(implicit encryption: Encryption): OWrites[GMPBulkSessionCache] =
       new OWrites[GMPBulkSessionCache] {
@@ -49,9 +49,9 @@ object GMPBulkSessionCache {
           val encryptedValue: (String, EncryptedValue, Instant) =
             ModelEncryption.encryptSessionCache(sessionCache)
           Json.obj(
-            "id" -> encryptedValue._1,
+            "id"             -> encryptedValue._1,
             "gmpBulkSession" -> encryptedValue._2,
-            "lastModified" -> encryptedValue._3
+            "lastModified"   -> encryptedValue._3
           )
         }
       }

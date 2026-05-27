@@ -19,31 +19,31 @@ package models
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 
-class GmpDateSpec extends PlaySpec with MockitoSugar{
+class GmpDateSpec extends PlaySpec with MockitoSugar {
 
   "isOnOrAfter06042016" must {
 
     "return true when the date is after the 06 04 2016" in {
 
-      val after = GmpDate(Some("10"),Some("04"),Some("2016"))
+      val after = GmpDate(Some("10"), Some("04"), Some("2016"))
       after.isOnOrAfter06042016 must be(true)
     }
 
     "return true when the date is on the 06 04 2016" in {
 
-      val after = GmpDate(Some("06"),Some("04"),Some("2016"))
+      val after = GmpDate(Some("06"), Some("04"), Some("2016"))
       after.isOnOrAfter06042016 must be(true)
     }
 
     "return false when the date is before the 06 04 2016" in {
 
-      val after = GmpDate(Some("05"),Some("04"),Some("2016"))
+      val after = GmpDate(Some("05"), Some("04"), Some("2016"))
       after.isOnOrAfter06042016 must be(false)
     }
 
     "return false when not a valid date" in {
 
-      val after = GmpDate(None,Some("04"),Some("2016"))
+      val after = GmpDate(None, Some("04"), Some("2016"))
       after.isOnOrAfter06042016 must be(false)
     }
 
@@ -53,19 +53,19 @@ class GmpDateSpec extends PlaySpec with MockitoSugar{
 
     "return true when the date is before the 05 04 2046" in {
 
-      val before = GmpDate(Some("4"),Some("4"),Some("2046"))
+      val before = GmpDate(Some("4"), Some("4"), Some("2046"))
       before.isBefore05042046 must be(true)
     }
 
     "return false when the date is on the 06 04 2046" in {
 
-      val after = GmpDate(Some("6"),Some("4"),Some("2046"))
+      val after = GmpDate(Some("6"), Some("4"), Some("2046"))
       after.isBefore05042046 must be(false)
     }
 
     "return false when not a valid date" in {
 
-      val after = GmpDate(None,Some("04"),Some("2016"))
+      val after = GmpDate(None, Some("04"), Some("2016"))
       after.isBefore05042046 must be(false)
     }
 
@@ -73,30 +73,30 @@ class GmpDateSpec extends PlaySpec with MockitoSugar{
 
   "getAsText" must {
     "return the date in the correct format" in {
-      val date = GmpDate(Some("06"),Some("04"),Some("2016"))
+      val date = GmpDate(Some("06"), Some("04"), Some("2016"))
       date.getAsText must be("06 April 2016")
     }
 
     "return empty string if no gmpdate" in {
       val date = GmpDate(None, None, None)
-      date.getAsText must be ("")
+      date.getAsText must be("")
     }
   }
 
   "isBefore" must {
     "return true if date1 before date2" in {
-      val date = GmpDate(Some("06"),Some("04"),Some("2016"))
-      date.isBefore(GmpDate(Some("07"),Some("04"),Some("2016"))) must be(true)
+      val date = GmpDate(Some("06"), Some("04"), Some("2016"))
+      date.isBefore(GmpDate(Some("07"), Some("04"), Some("2016"))) must be(true)
     }
 
     "return false if date1 after date2" in {
-      val date = GmpDate(Some("06"),Some("04"),Some("2016"))
-      date.isBefore(GmpDate(Some("05"),Some("04"),Some("2016"))) must be(false)
+      val date = GmpDate(Some("06"), Some("04"), Some("2016"))
+      date.isBefore(GmpDate(Some("05"), Some("04"), Some("2016"))) must be(false)
     }
 
     "return false if no date2" in {
-      val date = GmpDate(Some("06"),Some("04"),Some("2016"))
-      date.isBefore(GmpDate(None,None,None)) must be(false)
+      val date = GmpDate(Some("06"), Some("04"), Some("2016"))
+      date.isBefore(GmpDate(None, None, None)) must be(false)
     }
   }
 

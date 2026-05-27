@@ -19,18 +19,18 @@ package controllers
 import config.ApplicationConfig
 import connectors.GmpBulkConnector
 import controllers.auth.{AuthAction, FakeAuthAction}
-import models._
+import models.*
 
 import java.time.LocalDateTime
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito._
+import org.mockito.Mockito.*
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import org.scalatestplus.play.PlaySpec
 import play.api.i18n.{Lang, Messages, MessagesApi, MessagesImpl}
 import play.api.mvc.MessagesControllerComponents
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import services.GMPSessionService
 import uk.gov.hmrc.auth.core.AuthConnector
 import views.Views
@@ -39,22 +39,34 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class MoreBulkResultsControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar {
 
-  val mockAuthConnector = mock[AuthConnector]
+  val mockAuthConnector     = mock[AuthConnector]
   val mockGMPSessionService = mock[GMPSessionService]
-  val mockGmpBulkConnector = mock[GmpBulkConnector]
-  val mockAuthAction = mock[AuthAction]
-  implicit val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
-  implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
-  implicit val messagesAPI: MessagesApi = app.injector.instanceOf[MessagesApi]
-  implicit val messagesProvider: MessagesImpl = MessagesImpl(Lang("en"), messagesAPI)
-  implicit val ac: ApplicationConfig = app.injector.instanceOf[ApplicationConfig]
+  val mockGmpBulkConnector  = mock[GmpBulkConnector]
+  val mockAuthAction        = mock[AuthAction]
+  implicit val mcc:              MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
+  implicit val ec:               ExecutionContext             = app.injector.instanceOf[ExecutionContext]
+  implicit val messagesAPI:      MessagesApi                  = app.injector.instanceOf[MessagesApi]
+  implicit val messagesProvider: MessagesImpl                 = MessagesImpl(Lang("en"), messagesAPI)
+  implicit val ac:               ApplicationConfig            = app.injector.instanceOf[ApplicationConfig]
   lazy val views = app.injector.instanceOf[Views]
 
-  object TestMoreBulkResultsController extends MoreBulkResultsController(FakeAuthAction, mockAuthConnector, mockGMPSessionService,
-                  FakeGmpContext,mockGmpBulkConnector,ac,mcc,ec,views)
+  object TestMoreBulkResultsController
+      extends MoreBulkResultsController(
+        FakeAuthAction,
+        mockAuthConnector,
+        mockGMPSessionService,
+        FakeGmpContext,
+        mockGmpBulkConnector,
+        ac,
+        mcc,
+        ec,
+        views
+      )
 
-
-  val recentBulkCalculations = List(new BulkPreviousRequest("1234","abcd",LocalDateTime.now(),LocalDateTime.now()), new BulkPreviousRequest("5678","efgh", LocalDateTime.now(),LocalDateTime.now()))
+  val recentBulkCalculations = List(
+    new BulkPreviousRequest("1234", "abcd", LocalDateTime.now(), LocalDateTime.now()),
+    new BulkPreviousRequest("5678", "efgh", LocalDateTime.now(), LocalDateTime.now())
+  )
 
   when(mockGmpBulkConnector.getPreviousBulkRequests(any())(using any())).thenReturn(Future.successful(recentBulkCalculations))
 
@@ -64,17 +76,17 @@ class MoreBulkResultsControllerSpec extends PlaySpec with GuiceOneServerPerSuite
 
       "respond with ok" in {
         val result = TestMoreBulkResultsController.retrieveMoreBulkResults(FakeRequest())
-            status(result) must equal(OK)
-            contentAsString(result) must include(Messages("gmp.more_bulk_results.header"))
-            contentAsString(result) must include(Messages("gmp.signout"))
-            contentAsString(result) must include(Messages("gmp.back.link"))
+        status(result)          must equal(OK)
+        contentAsString(result) must include(Messages("gmp.more_bulk_results.header"))
+        contentAsString(result) must include(Messages("gmp.signout"))
+        contentAsString(result) must include(Messages("gmp.back.link"))
 
       }
 
       "display table with more recent bulk calculation links" in {
         val result = TestMoreBulkResultsController.retrieveMoreBulkResults(FakeRequest())
-            status(result) must equal(OK)
-            contentAsString(result) must include(Messages("gmp.more_bulk_results.header"))
+        status(result)          must equal(OK)
+        contentAsString(result) must include(Messages("gmp.more_bulk_results.header"))
       }
     }
   }

@@ -19,18 +19,19 @@ package models
 import java.time.LocalDateTime
 import play.api.libs.json.{JsString, Json, OFormat, Reads, Writes}
 
-case class CalculationRequestLine (scon: String,
-                                  nino: String,
-                                  firstForename: String,
-                                  surname: String,
-                                  memberReference: Option[String],
-                                  calctype: Option[Int],
-                                  terminationDate: Option[String] = None,
-                                  revaluationDate: Option[String] = None,
-                                  revaluationRate: Option[Int] = None,
-                                  dualCalc: Int,
-                                  memberIsInScheme: Boolean = false
-                                  ) {
+case class CalculationRequestLine(
+  scon:             String,
+  nino:             String,
+  firstForename:    String,
+  surname:          String,
+  memberReference:  Option[String],
+  calctype:         Option[Int],
+  terminationDate:  Option[String] = None,
+  revaluationDate:  Option[String] = None,
+  revaluationRate:  Option[Int] = None,
+  dualCalc:         Int,
+  memberIsInScheme: Boolean = false
+) {
   override def toString = {
     val dc = dualCalc match {
       case 1 => "Y"
@@ -38,7 +39,10 @@ case class CalculationRequestLine (scon: String,
       case _ => ""
     }
     List(
-      scon, nino, firstForename, surname,
+      scon,
+      nino,
+      firstForename,
+      surname,
       memberReference.getOrElse(""),
       calctype.map(ct => ct.toString).getOrElse(""),
       terminationDate.getOrElse(""),
@@ -53,31 +57,30 @@ object CalculationRequestLine {
   implicit val formats: OFormat[CalculationRequestLine] = Json.format[CalculationRequestLine]
 }
 
-case class BulkCalculationRequestLine(lineId: Int,
-                                      validCalculationRequest: Option[CalculationRequestLine],
-                                      globalError: Option[String],
-                                      validationErrors: Option[Map[String,String]]
-                                     )
+case class BulkCalculationRequestLine(
+  lineId:                  Int,
+  validCalculationRequest: Option[CalculationRequestLine],
+  globalError:             Option[String],
+  validationErrors:        Option[Map[String, String]]
+)
 
 object BulkCalculationRequestLine {
   implicit val formats: OFormat[BulkCalculationRequestLine] = Json.format[BulkCalculationRequestLine]
 }
 
-case class BulkCalculationRequest(uploadReference: String,
-                                  email: String,
-                                  reference: String,
-                                  calculationRequests: List[BulkCalculationRequestLine],
-                                  userId: String = "",
-                                  timestamp: LocalDateTime = LocalDateTime.now()
-                                 )
+case class BulkCalculationRequest(
+  uploadReference:     String,
+  email:               String,
+  reference:           String,
+  calculationRequests: List[BulkCalculationRequestLine],
+  userId:              String = "",
+  timestamp:           LocalDateTime = LocalDateTime.now()
+)
 
 object BulkCalculationRequest {
 
-  implicit val timestampReads: Reads[LocalDateTime] = Reads[LocalDateTime](js =>
-    js.validate[String].map[LocalDateTime](dtString =>
-      LocalDateTime.parse(dtString)
-    )
-  )
+  implicit val timestampReads: Reads[LocalDateTime] =
+    Reads[LocalDateTime](js => js.validate[String].map[LocalDateTime](dtString => LocalDateTime.parse(dtString)))
 
   implicit val timestampWrites: Writes[LocalDateTime] = new Writes[LocalDateTime] {
     def writes(localDateTime: LocalDateTime) = JsString(localDateTime.toString)

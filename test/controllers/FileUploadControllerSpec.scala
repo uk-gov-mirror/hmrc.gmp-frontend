@@ -19,17 +19,17 @@ package controllers
 import java.time.Instant
 import config.{ApplicationConfig, GmpSessionCache}
 import controllers.auth.{AuthAction, FakeAuthAction}
-import models._
-import models.upscan._
+import models.*
+import models.upscan.*
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito._
+import org.mockito.Mockito.*
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import org.scalatestplus.play.PlaySpec
 import play.api.i18n.{Lang, Messages, MessagesApi, MessagesImpl}
 import play.api.libs.json.Json
 import play.api.mvc.{AnyContentAsEmpty, MessagesControllerComponents, Result}
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import play.api.test.{FakeHeaders, FakeRequest}
 import services.{GMPSessionService, UpscanService}
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -41,50 +41,59 @@ import views.Views
 import scala.concurrent.{ExecutionContext, Future}
 
 class FileUploadControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar with ScalaFutures {
-  val mockAuthConnector = mock[AuthConnector]
+  val mockAuthConnector     = mock[AuthConnector]
   val mockGMPSessionService = mock[GMPSessionService]
-  val mockAuthAction = mock[AuthAction]
-  val upscanService = mock[UpscanService]
-  implicit val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
-  implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
-  implicit val messagesAPI: MessagesApi = app.injector.instanceOf[MessagesApi]
-  implicit val messagesProvider: MessagesImpl = MessagesImpl(Lang("en"), messagesAPI)
-  implicit val ac: ApplicationConfig = app.injector.instanceOf[ApplicationConfig]
-  implicit val gmpSessionCache: GmpSessionCache = app.injector.instanceOf[GmpSessionCache]
-  lazy val views = app.injector.instanceOf[Views]
+  val mockAuthAction        = mock[AuthAction]
+  val upscanService         = mock[UpscanService]
+  implicit val mcc:              MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
+  implicit val ec:               ExecutionContext             = app.injector.instanceOf[ExecutionContext]
+  implicit val messagesAPI:      MessagesApi                  = app.injector.instanceOf[MessagesApi]
+  implicit val messagesProvider: MessagesImpl                 = MessagesImpl(Lang("en"), messagesAPI)
+  implicit val ac:               ApplicationConfig            = app.injector.instanceOf[ApplicationConfig]
+  implicit val gmpSessionCache:  GmpSessionCache              = app.injector.instanceOf[GmpSessionCache]
+  lazy val views    = app.injector.instanceOf[Views]
   val uploadDetails = UploadDetails(Instant.now, "sum", "csv", "name1")
-  val callBackData = UpscanReadyCallback("ref1", "READY", new URL("http://localhost:9991/download1"), uploadDetails)
+  val callBackData  = UpscanReadyCallback("ref1", "READY", new URL("http://localhost:9991/download1"), uploadDetails)
 
   val emptyGmpBulkSession = GmpBulkSession(None, None, None)
-  val gmpBulkSession = GmpBulkSession(Some(UploadedSuccessfully("ref1", "name1", "http://localhost:9991/download1")), None, None)
+  val gmpBulkSession      = GmpBulkSession(Some(UploadedSuccessfully("ref1", "name1", "http://localhost:9991/download1")), None, None)
 
-  val fakeRequest = FakeRequest(method = "POST", uri = "", headers = FakeHeaders(Seq("Content-type" -> ("application/json"))), body = Json.toJson(callBackData))
+  val fakeRequest =
+    FakeRequest(method = "POST", uri = "", headers = FakeHeaders(Seq("Content-type" -> "application/json")), body = Json.toJson(callBackData))
 
-  object TestFileUploadController extends FileUploadController(FakeAuthAction, mockAuthConnector, mockGMPSessionService, FakeGmpContext,upscanService,mcc,ac,ec,gmpSessionCache,views) {
-
- }
+  object TestFileUploadController
+      extends FileUploadController(
+        FakeAuthAction,
+        mockAuthConnector,
+        mockGMPSessionService,
+        FakeGmpContext,
+        upscanService,
+        mcc,
+        ac,
+        ec,
+        gmpSessionCache,
+        views
+      ) {}
 
   "File upload controller GET " must {
 
     "authenticated users" must {
-      "respond with ok" in {
-
-          getFileUploadPartial(FakeRequest()) {
-            result =>
-              status(result) must equal(OK)
-              contentAsString(result) must include(Messages("gmp.fileupload.header"))
-              contentAsString(result) must include(Messages("gmp.back.link"))
+      "respond with ok" in
+        getFileUploadPartial(FakeRequest()) { result =>
+          status(result)          must equal(OK)
+          contentAsString(result) must include(Messages("gmp.fileupload.header"))
+          contentAsString(result) must include(Messages("gmp.back.link"))
         }
-      }
 
       "be shown correct title for DOL" in {
 
         when(mockGMPSessionService.resetGmpBulkSession()(using any())).thenReturn(Future.successful(Some(emptyGmpBulkSession)))
-        when(upscanService.getUpscanFormData()(using any(), any())).thenReturn(Future.successful(UpscanInitiateResponse(Reference("ref1"), "to", Map())))
+        when(upscanService.getUpscanFormData()(using any(), any()))
+          .thenReturn(Future.successful(UpscanInitiateResponse(Reference("ref1"), "to", Map())))
         when(mockGMPSessionService.createCallbackRecord(using any())).thenReturn(Future.successful(None))
-          val result = TestFileUploadController.get(FakeRequest())
-          status(result) must equal(OK)
-          contentAsString(result) must include(Messages("gmp.fileupload.header"))
+        val result = TestFileUploadController.get(FakeRequest())
+        status(result)          must equal(OK)
+        contentAsString(result) must include(Messages("gmp.fileupload.header"))
       }
 
     }
@@ -93,17 +102,16 @@ class FileUploadControllerSpec extends PlaySpec with GuiceOneServerPerSuite with
 
       "authorised users" must {
         "have a status of OK for generic error" in {
-            val result = TestFileUploadController.failure("", "", "")(FakeRequest())
-              status(result) must be(OK)
-              contentAsString(result) must include(Messages("gmp.bulk.failure.generic"))
-              contentAsString(result) must include(Messages("gmp.bulk.problem.header"))
+          val result = TestFileUploadController.failure("", "", "")(FakeRequest())
+          status(result)          must be(OK)
+          contentAsString(result) must include(Messages("gmp.bulk.failure.generic"))
+          contentAsString(result) must include(Messages("gmp.bulk.problem.header"))
         }
       }
     }
   }
 
   "File upload controller callback " must {
-
 
     "successfully store callback data in session cache" in {
       when(mockGMPSessionService.cacheCallBackData(any())(using any())).thenReturn(Future.successful(Some(gmpBulkSession)))
@@ -115,23 +123,22 @@ class FileUploadControllerSpec extends PlaySpec with GuiceOneServerPerSuite with
 
     "throw exception when doesn't store callback data" in {
       when(mockGMPSessionService.cacheCallBackData(any())(using any())).thenReturn(Future.failed(new RuntimeException("Failed to update cache")))
-      intercept[RuntimeException]{
-       await(TestFileUploadController.callback("1")(fakeRequest))
+      intercept[RuntimeException] {
+        await(TestFileUploadController.callback("1")(fakeRequest))
       }
     }
 
     "recover from failures more" in {
       when(mockGMPSessionService.cacheCallBackData(any())(using any())).thenReturn(Future.failed(new RuntimeException))
-      intercept[RuntimeException]{
+      intercept[RuntimeException] {
         await(TestFileUploadController.callback("1")(fakeRequest))
       }
     }
 
-
     "store data when valid session id" in {
 
-
-      val fakeRequest = FakeRequest(method = "POST", uri = "", headers = FakeHeaders(Seq("Content-type" -> ("application/json"))), body = Json.toJson(callBackData))
+      val fakeRequest =
+        FakeRequest(method = "POST", uri = "", headers = FakeHeaders(Seq("Content-type" -> "application/json")), body = Json.toJson(callBackData))
       when(mockGMPSessionService.cacheCallBackData(any())(using any())).thenReturn(Future.successful(Some(gmpBulkSession)))
       val result = TestFileUploadController.callback("1")(fakeRequest)
       status(result) must be(OK)
@@ -139,8 +146,6 @@ class FileUploadControllerSpec extends PlaySpec with GuiceOneServerPerSuite with
     }
   }
 
-  def getFileUploadPartial(request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest())(handler: Future[Result] => Any): Unit = {
-
-  }
+  def getFileUploadPartial(request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest())(handler: Future[Result] => Any): Unit = {}
 
 }

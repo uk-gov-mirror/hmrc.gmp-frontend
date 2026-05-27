@@ -23,11 +23,8 @@ case class BulkPreviousRequest(uploadReference: String, reference: String, times
 
 object BulkPreviousRequest {
 
-  implicit val timestampReads: Reads[LocalDateTime] = Reads[LocalDateTime](js =>
-    js.validate[String].map[LocalDateTime](dtString =>
-      LocalDateTime.parse(dtString)
-    )
-  )
+  implicit val timestampReads: Reads[LocalDateTime] =
+    Reads[LocalDateTime](js => js.validate[String].map[LocalDateTime](dtString => LocalDateTime.parse(dtString)))
 
   implicit val timestampWrites: Writes[LocalDateTime] = new Writes[LocalDateTime] {
     def writes(localDateTime: LocalDateTime) = JsString(localDateTime.toString)

@@ -31,15 +31,22 @@ import org.mongodb.scala.SingleObservableFuture
 import java.util.concurrent.TimeUnit
 
 class GMPBulkSessionRepositorySpec
-  extends AnyFreeSpec with Matchers with ScalaFutures with IntegrationPatience with OptionValues
-    with GuiceOneAppPerSuite with FutureAwaits with DefaultAwaitTimeout with BeforeAndAfterEach  {
+    extends AnyFreeSpec
+    with Matchers
+    with ScalaFutures
+    with IntegrationPatience
+    with OptionValues
+    with GuiceOneAppPerSuite
+    with FutureAwaits
+    with DefaultAwaitTimeout
+    with BeforeAndAfterEach {
 
-  val repository: GMPBulkSessionRepository = app.injector.instanceOf[GMPBulkSessionRepository]
-  val id: String = "id"
-  val callBackData: UploadStatus = UploadedSuccessfully("testReference", "testFileName", "testUrl")
-  val emailAddress: String = "testData"
-  val reference: String = "testData"
-  val GMPBulkSession: GmpBulkSession =
+  val repository:     GMPBulkSessionRepository = app.injector.instanceOf[GMPBulkSessionRepository]
+  val id:             String                   = "id"
+  val callBackData:   UploadStatus             = UploadedSuccessfully("testReference", "testFileName", "testUrl")
+  val emailAddress:   String                   = "testData"
+  val reference:      String                   = "testData"
+  val GMPBulkSession: GmpBulkSession           =
     new GmpBulkSession(Some(callBackData), Some(emailAddress), Some(reference))
   val gmpBulkSessionCache: GMPBulkSessionCache = new GMPBulkSessionCache(id, GMPBulkSession)
 
@@ -87,13 +94,12 @@ class GMPBulkSessionRepositorySpec
       }
     }
 
-
-      "when there is no record for this id" - {
-        "must return None" in {
-          val nonExistingCache = gmpBulkSessionCache.copy(id = "non-existing-id")
-          val result = await(repository.get(nonExistingCache.id))
-          result mustBe None
-        }
+    "when there is no record for this id" - {
+      "must return None" in {
+        val nonExistingCache = gmpBulkSessionCache.copy(id = "non-existing-id")
+        val result           = await(repository.get(nonExistingCache.id))
+        result mustBe None
       }
+    }
   }
 }

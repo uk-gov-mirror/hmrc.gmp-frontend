@@ -22,20 +22,20 @@ import play.api.libs.json.Json
 
 import java.time.LocalDateTime
 
-class DashboardSpec extends AnyWordSpec with Matchers{
+class DashboardSpec extends AnyWordSpec with Matchers {
 
   "Dashboard Json formats" should {
     "serialise Dashboard to Json" in {
-      val bulkPreviousRequest = BulkPreviousRequest("upload","reference", LocalDateTime.now().withNano(0),LocalDateTime.now().withNano(0))
-      val dashboard = Dashboard(List(bulkPreviousRequest))
-      val json = Json.toJson(dashboard)
+      val bulkPreviousRequest = BulkPreviousRequest("upload", "reference", LocalDateTime.now().withNano(0), LocalDateTime.now().withNano(0))
+      val dashboard           = Dashboard(List(bulkPreviousRequest))
+      val json                = Json.toJson(dashboard)
       (json \ "recentBulkCalculations").as[List[BulkPreviousRequest]] shouldBe List(bulkPreviousRequest)
     }
 
     "deserialise Json to Dashboard" in {
       val bulkPreviousRequest = BulkPreviousRequest("upload", "reference", LocalDateTime.now().withNano(0), LocalDateTime.now().withNano(0))
-      val json = Json.obj("recentBulkCalculations" -> List(bulkPreviousRequest))
-      val dashboard = json.as[Dashboard]
+      val json                = Json.obj("recentBulkCalculations" -> List(bulkPreviousRequest))
+      val dashboard           = json.as[Dashboard]
       dashboard shouldBe Dashboard(List(bulkPreviousRequest))
     }
   }

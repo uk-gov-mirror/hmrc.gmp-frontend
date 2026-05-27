@@ -28,42 +28,42 @@ import views.Views
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class BulkReferenceController @Inject()(authAction: AuthAction,
-                                        val authConnector: AuthConnector,
-                                        GMPSessionService: GMPSessionService,implicit val config:GmpContext,brf:BulkReferenceForm,
-                                        override val messagesControllerComponents: MessagesControllerComponents,
-                                        implicit val executionContext: ExecutionContext,ac:ApplicationConfig,
-                                        implicit val gmpSessionCache: GmpSessionCache,
-                                        views: Views)
-  extends GmpController(messagesControllerComponents,ac,GMPSessionService,config) with Logging{
+class BulkReferenceController @Inject() (
+  authAction:                                AuthAction,
+  val authConnector:                         AuthConnector,
+  GMPSessionService:                         GMPSessionService,
+  implicit val config:                       GmpContext,
+  brf:                                       BulkReferenceForm,
+  override val messagesControllerComponents: MessagesControllerComponents,
+  implicit val executionContext:             ExecutionContext,
+  ac:                                        ApplicationConfig,
+  implicit val gmpSessionCache:              GmpSessionCache,
+  views:                                     Views
+) extends GmpController(messagesControllerComponents, ac, GMPSessionService, config)
+    with Logging {
 
   lazy val bulkReferenceForm = brf.bulkReferenceForm
 
-  def get = authAction.async {
-    implicit request =>
-      Future.successful(Ok(views.bulkReference(bulkReferenceForm)))
+  def get = authAction.async { implicit request =>
+    Future.successful(Ok(views.bulkReference(bulkReferenceForm)))
   }
 
-  def post = authAction.async {
-    implicit request => {
-      logger.debug(s"[BulkReferenceController][post]: ${request.body}")
+  def post = authAction.async { implicit request =>
+    logger.debug(s"[BulkReferenceController][post]: ${request.body}")
 
-      bulkReferenceForm.bindFromRequest().fold(
-        formWithErrors => {Future.successful(BadRequest(views.bulkReference(formWithErrors)))},
-        value => {
+    bulkReferenceForm
+      .bindFromRequest()
+      .fold(
+        formWithErrors => Future.successful(BadRequest(views.bulkReference(formWithErrors))),
+        value =>
           GMPSessionService.cacheEmailAndReference(Some(value.email.trim), Some(value.reference.trim)).map {
             case Some(_) => Redirect(controllers.routes.BulkRequestReceivedController.get)
-            case _ => throw new RuntimeException
+            case _       => throw new RuntimeException
           }
-        }
       )
-    }
   }
 
-  def back = authAction.async {
-    _ => {
-      Future.successful(Redirect(routes.FileUploadController.get))
-    }
+  def back = authAction.async { _ =>
+    Future.successful(Redirect(routes.FileUploadController.get))
   }
 }
-

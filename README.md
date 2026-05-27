@@ -29,6 +29,29 @@ Authentication
 
 This user logs into this service using the [Government Gateway]
 
+## Code formatting (scalafmt)
+
+This project uses [scalafmt](https://scalameta.org/scalafmt/) via the `sbt-scalafmt` plugin.
+
+- To format the main and test source code:
+
+  ```bash
+  sbt scalafmtAll
+  ```
+
+- To format only the main sources:
+
+  ```bash
+  sbt scalafmt
+  ```
+
+- To format only the test sources:
+
+  ```bash
+  sbt test:scalafmt
+  ```
+
+Formatting is **not** wired into `compile` by default. Run `scalafmt`/`scalafmtAll` separately (for example, before committing or as part of a CI check), and use `compile` just for compilation.
 
 Acronyms
 --------

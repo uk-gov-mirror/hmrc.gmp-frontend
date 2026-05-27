@@ -21,7 +21,6 @@ import com.typesafe.config.ConfigFactory
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
-
 trait AppConfig {
   val isMongoDBCacheEnabled: Boolean
 
@@ -29,10 +28,9 @@ trait AppConfig {
 }
 
 @Singleton
-class ApplicationConfig @Inject()(
-  val runModeConfiguration: Configuration,
-  val environment: Environment,
-  servicesConfig: ServicesConfig) extends ServicesConfig(runModeConfiguration) with AppConfig {
+class ApplicationConfig @Inject() (val runModeConfiguration: Configuration, val environment: Environment, servicesConfig: ServicesConfig)
+    extends ServicesConfig(runModeConfiguration)
+    with AppConfig {
 
   val contactHost = runModeConfiguration.getOptional[String](s"contact-frontend.host").getOrElse("")
 
@@ -41,19 +39,19 @@ class ApplicationConfig @Inject()(
   val reportAProblemNonJSUrl: String =
     s"$contactHost/contact/problem_reports_nonjs?service=$contactFormServiceIdentifier"
 
-  val globalErrors = ConfigFactory.load("global-errors.properties")
+  val globalErrors                      = ConfigFactory.load("global-errors.properties")
   lazy val contactFormServiceIdentifier = "GMP"
 
   val upscanInitiateHost: String = servicesConfig.baseUrl("upscan")
-  val upscanProtocol: String = servicesConfig.getConfString("upscan.protocol", "https")
+  val upscanProtocol:     String = servicesConfig.getConfString("upscan.protocol", "https")
   val upscanRedirectBase: String = runModeConfiguration.get[String]("microservice.services.upscan.redirect-base")
 
-  lazy val timeout = servicesConfig.getInt("timeout.seconds")
+  lazy val timeout          = servicesConfig.getInt("timeout.seconds")
   lazy val timeoutCountdown = servicesConfig.getInt("timeout.countdown")
   lazy val cacheTtl: Int = servicesConfig.getInt("mongodb.timeToLiveInSeconds")
 
-  override val isMongoDBCacheEnabled: Boolean = runModeConfiguration.getOptional[Boolean]("isMongoDBCacheEnabled").getOrElse(false)
-  override def serviceMaxNoOfAttempts: Int = {
+  override val isMongoDBCacheEnabled:  Boolean = runModeConfiguration.getOptional[Boolean]("isMongoDBCacheEnabled").getOrElse(false)
+  override def serviceMaxNoOfAttempts: Int     =
     runModeConfiguration.getOptional[String]("service.maxAttempts") match {
       case Some(value) if value.matches("^\\d+$") =>
         value.toInt
@@ -62,9 +60,4 @@ class ApplicationConfig @Inject()(
       case None =>
         3
     }
-  }
 }
-
-
-
-

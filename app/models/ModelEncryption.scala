@@ -16,17 +16,16 @@
 
 package models
 
-
-import play.api.libs.json._
+import play.api.libs.json.*
 import uk.gov.hmrc.crypto.EncryptedValue
 import services.Encryption
 import java.time.Instant
 
-
 object ModelEncryption {
 
   def encryptSessionCache(gmpBulkSessionCache: GMPBulkSessionCache)(implicit encryption: Encryption): (String, EncryptedValue, Instant) =
-    (gmpBulkSessionCache.id,
+    (
+      gmpBulkSessionCache.id,
       encryption.crypto.encrypt(Json.toJson(gmpBulkSessionCache.gmpBulkSession).toString, gmpBulkSessionCache.id),
       gmpBulkSessionCache.lastModified
     )
@@ -38,17 +37,18 @@ object ModelEncryption {
       lastModified = lastModified
     )
 
-  def encryptSingleCalculationSessionCache(singleCalculationSessionCache: SingleCalculationSessionCache)
-                                          (implicit encryption: Encryption): (String, EncryptedValue, Instant) =
+  def encryptSingleCalculationSessionCache(
+    singleCalculationSessionCache: SingleCalculationSessionCache
+  )(implicit encryption: Encryption): (String, EncryptedValue, Instant) =
     (
       singleCalculationSessionCache.id,
       encryption.crypto.encrypt(Json.toJson(singleCalculationSessionCache.gmpSession).toString, singleCalculationSessionCache.id),
       singleCalculationSessionCache.lastModified
     )
 
-
-  def decryptSingleCalculationSessionCache(id: String, gmpSession: EncryptedValue, lastModified: Instant)
-                                          (implicit encryption: Encryption): SingleCalculationSessionCache =
+  def decryptSingleCalculationSessionCache(id: String, gmpSession: EncryptedValue, lastModified: Instant)(implicit
+    encryption: Encryption
+  ): SingleCalculationSessionCache =
     SingleCalculationSessionCache(
       id = id,
       gmpSession = Json.parse(encryption.crypto.decrypt(gmpSession, id)).as[GmpSession],

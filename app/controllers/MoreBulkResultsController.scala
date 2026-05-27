@@ -28,24 +28,22 @@ import views.Views
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class MoreBulkResultsController @Inject()(authAction: AuthAction,
-                                          override val authConnector: AuthConnector,
-                                          GMPSessionService: GMPSessionService,
-                                          implicit val config:GmpContext,
-                                          gmpBulkConnector: GmpBulkConnector,
-                                          ac:ApplicationConfig,
-                                          override val messagesControllerComponents: MessagesControllerComponents,
-                                          implicit val executionContext: ExecutionContext,
-                                          views: Views) extends GmpPageFlow(authConnector,GMPSessionService,config,messagesControllerComponents,ac) {
+class MoreBulkResultsController @Inject() (
+  authAction:                                AuthAction,
+  override val authConnector:                AuthConnector,
+  GMPSessionService:                         GMPSessionService,
+  implicit val config:                       GmpContext,
+  gmpBulkConnector:                          GmpBulkConnector,
+  ac:                                        ApplicationConfig,
+  override val messagesControllerComponents: MessagesControllerComponents,
+  implicit val executionContext:             ExecutionContext,
+  views:                                     Views
+) extends GmpPageFlow(authConnector, GMPSessionService, config, messagesControllerComponents, ac) {
 
-  def retrieveMoreBulkResults = authAction.async {
-    implicit request => {
-      val link = request.linkId
-      gmpBulkConnector.getPreviousBulkRequests(link).map {
-        bulkPreviousRequests => {
-          Ok(views.moreBulkResults(bulkPreviousRequests.sorted))
-        }
-      }
+  def retrieveMoreBulkResults = authAction.async { implicit request =>
+    val link = request.linkId
+    gmpBulkConnector.getPreviousBulkRequests(link).map { bulkPreviousRequests =>
+      Ok(views.moreBulkResults(bulkPreviousRequests.sorted))
     }
   }
 

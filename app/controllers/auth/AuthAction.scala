@@ -17,46 +17,50 @@
 package controllers.auth
 
 import com.google.inject.{Inject, Singleton}
-import play.api.mvc._
-import uk.gov.hmrc.auth.core._
+import play.api.mvc.*
+import uk.gov.hmrc.auth.core.*
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class AuthenticatedRequest[A](linkId: String, request:Request[A]) extends WrappedRequest[A](request)
+case class AuthenticatedRequest[A](linkId: String, request: Request[A]) extends WrappedRequest[A](request)
 
 @Singleton
-class AuthAction @Inject()(override val authConnector: AuthConnector,
-                           messagesControllerComponents: MessagesControllerComponents,
-                           externalUrls: ExternalUrls)(implicit ec: ExecutionContext)
-  extends ActionBuilder[AuthenticatedRequest, AnyContent] with AuthorisedFunctions{
+class AuthAction @Inject() (
+  override val authConnector:   AuthConnector,
+  messagesControllerComponents: MessagesControllerComponents,
+  externalUrls:                 ExternalUrls
+)(implicit ec: ExecutionContext)
+    extends ActionBuilder[AuthenticatedRequest, AnyContent]
+    with AuthorisedFunctions {
 
-  override val parser: BodyParser[AnyContent] = messagesControllerComponents.parsers.defaultBodyParser
-  override protected val executionContext: ExecutionContext = messagesControllerComponents.executionContext
-
+  override val parser:                     BodyParser[AnyContent] = messagesControllerComponents.parsers.defaultBodyParser
+  override protected val executionContext: ExecutionContext       = messagesControllerComponents.executionContext
 
   override def invokeBlock[A](request: Request[A], block: AuthenticatedRequest[A] => Future[Result]): Future[Result] = {
 
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
     authorised(ConfidenceLevel.L50 and (Enrolment("HMRC-PSA-ORG") or Enrolment("HMRC-PP-ORG") or Enrolment("HMRC-PODS-ORG")))
-      .retrieve(Retrievals.authorisedEnrolments) {
-        case Enrolments(enrolments) =>
+      .retrieve(Retrievals.authorisedEnrolments) { case Enrolments(enrolments) =>
 
-          val psaid = enrolments.find(_.key == "HMRC-PSA-ORG").flatMap {
-            enrolment => enrolment.identifiers.find(id => id.key == "PSAID").map(_.value)
-          }
-          val ppid = enrolments.find(_.key == "HMRC-PP-ORG").flatMap {
-            enrolment => enrolment.identifiers.find(id => id.key == "PPID").map(_.value)
-          }
+        val psaid = enrolments.find(_.key == "HMRC-PSA-ORG").flatMap { enrolment =>
+          enrolment.identifiers.find(id => id.key == "PSAID").map(_.value)
+        }
+        val ppid = enrolments.find(_.key == "HMRC-PP-ORG").flatMap { enrolment =>
+          enrolment.identifiers.find(id => id.key == "PPID").map(_.value)
+        }
 
-          val podsPsaid = enrolments.find(_.key == "HMRC-PODS-ORG").flatMap {
-            enrolment => enrolment.identifiers.find(id => id.key == "PSAID").map(_.value)
-          }
+        val podsPsaid = enrolments.find(_.key == "HMRC-PODS-ORG").flatMap { enrolment =>
+          enrolment.identifiers.find(id => id.key == "PSAID").map(_.value)
+        }
 
-          psaid.orElse(ppid).orElse(podsPsaid).fold(Future.successful(Results.Redirect(externalUrls.signIn)))(id => block(AuthenticatedRequest(id, request)))
+        psaid
+          .orElse(ppid)
+          .orElse(podsPsaid)
+          .fold(Future.successful(Results.Redirect(externalUrls.signIn)))(id => block(AuthenticatedRequest(id, request)))
       }
   } recover {
     case _: NoActiveSession => Results.Redirect(externalUrls.signIn)

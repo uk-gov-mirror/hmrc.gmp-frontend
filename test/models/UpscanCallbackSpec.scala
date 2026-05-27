@@ -51,7 +51,8 @@ class UpscanCallbackSpec extends BaseSpec {
 }""".stripMargin
 
       val result = intercept[JsResultException] {
-        Json.parse(json).as[UpscanCallback] }
+        Json.parse(json).as[UpscanCallback]
+      }
       result.errors.mkString.contains("Invalid type discriminator") shouldBe true
 
     }
@@ -72,11 +73,8 @@ class UpscanCallbackSpec extends BaseSpec {
         Json.parse(json).as[UpscanCallback]
       }
 
-      val found = result.errors.exists {
-        case (_, errs) =>
-          errs.exists(e =>
-              e.message.contains("Unexpected JsLookupResult")
-          )
+      val found = result.errors.exists { case (_, errs) =>
+        errs.exists(e => e.message.contains("Unexpected JsLookupResult"))
       }
       found shouldBe true
     }
@@ -95,7 +93,8 @@ class UpscanCallbackSpec extends BaseSpec {
                    }"""
 
       val result = intercept[JsResultException] {
-        Json.parse(json).as[UpscanCallback] }
+        Json.parse(json).as[UpscanCallback]
+      }
       result.errors.mkString.contains("error.expected.url") shouldBe true
     }
   }

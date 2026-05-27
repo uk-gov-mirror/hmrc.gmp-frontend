@@ -23,17 +23,15 @@ import uk.gov.hmrc.play.bootstrap.auth.DefaultAuthConnector
 import uk.gov.hmrc.play.bootstrap.http.HttpClientV2Provider
 import uk.gov.hmrc.http.client.HttpClientV2
 
-class GmpModule(environment: Environment,
-                configuration: Configuration) extends AbstractModule {
+class GmpModule(environment: Environment, configuration: Configuration) extends AbstractModule {
 
-  val mode: Mode = environment.mode
+  val mode:                 Mode          = environment.mode
   val runModeConfiguration: Configuration = configuration
 
   override def configure(): Unit = {
     bind(classOf[HttpClientV2]).toProvider(classOf[HttpClientV2Provider])
-      bind(classOf[AuthConnector]).to(classOf[DefaultAuthConnector])
+    bind(classOf[AuthConnector]).to(classOf[DefaultAuthConnector])
 
-
-}
+  }
 
 }

@@ -32,58 +32,50 @@ class BulkReferenceSpec extends GmpViewSpec {
     behave like pageWithHeader(messages("gmp.bulk_reference.header"))
     behave like pageWithJsBackLink()
 
-    behave like pageWithButtonForm(
-      "/guaranteed-minimum-pension/getting-results",
-      messages("gmp.bulk_reference.button"))
+    behave like pageWithButtonForm("/guaranteed-minimum-pension/getting-results", messages("gmp.bulk_reference.button"))
 
     "display an input field for text entry" in {
       doc.getElementById("email") must not be null
-      doc must haveInputLabelWithText("email", expectedText=s"${messages("gmp.email.address")}")
+      doc                         must haveInputLabelWithText("email", expectedText = s"${messages("gmp.email.address")}")
 
       doc.getElementById("reference") must not be null
-      doc must haveInputLabelWithText("reference", expectedText=s"${messages("gmp.reference.calcname")}")
+      doc                             must haveInputLabelWithText("reference", expectedText = s"${messages("gmp.reference.calcname")}")
     }
 
   }
 
-  lazy val layout = app.injector.instanceOf[views.html.Layout]
+  lazy val layout      = app.injector.instanceOf[views.html.Layout]
   lazy val viewHelpers = app.injector.instanceOf[ViewHelpers]
 
   override def view: Html = new views.html.bulk_reference(layout, viewHelpers)(bulkReferenceForm)
 
   val bulkReferenceForm = Form(
     mapping(
-      "email" -> text.verifying(emailConstraint),
+      "email"     -> text.verifying(emailConstraint),
       "reference" -> text
         .verifying(messages("gmp.error.mandatory", messages("gmp.reference")), x => x.trim.length != 0)
         .verifying(messages("gmp.error.csv.member_ref.length.invalid", messages("gmp.reference")), x => x.trim.length <= MAX_REFERENCE_LENGTH)
         .verifying(messages("gmp.error.csv.member_ref.character.invalid", messages("gmp.reference")), x => x.trim.matches(CHARS_ALLOWED))
         .verifying(messages("gmp.error.csv.member_ref.spaces.invalid", messages("gmp.reference")), x => !(x.trim matches WHITE_SPACES))
-    )(BulkReference.apply)((br:BulkReference) => Some(br.email, br.reference))
+    )(BulkReference.apply)((br: BulkReference) => Some(br.email, br.reference))
   )
 
-
   val MAX_REFERENCE_LENGTH: Int = 99
-  val CHARS_ALLOWED = "^[\\s,a-zA-Z0-9_-]*$"
+  val CHARS_ALLOWED        = "^[\\s,a-zA-Z0-9_-]*$"
   val emailConstraintRegex = "^((?:[a-zA-Z][a-zA-Z0-9_]*))(.)((?:[a-zA-Z][a-zA-Z0-9_]*))*$"
-  val WHITE_SPACES = ".*\\s.*"
-  val emailRegex = "^([a-zA-Z0-9.!#$%&’'*+/=?^_{|}~-]+)@([a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*)$".r
+  val WHITE_SPACES         = ".*\\s.*"
+  val emailRegex           = "^([a-zA-Z0-9.!#$%&’'*+/=?^_{|}~-]+)@([a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*)$".r
 
-  lazy val emailConstraint : Constraint[String] = Constraint("constraints.email") ({
-    text =>
-      if (text.trim.length == 0){
-        Invalid(Seq(ValidationError(messages("gmp.error.mandatory.an", messages("gmp.email")))))
-      }
-      else if (!text.trim.toUpperCase.matches(emailRegex.regex)){
-        Invalid(Seq(ValidationError(messages("gmp.error.email.invalid"))))
-      }
-      else if(text.trim matches emailConstraintRegex){
-        Invalid(Seq(ValidationError(messages("gmp.error.email.invalid"))))
-      }
-      else {
-        Valid
-      }
-  })
-
+  lazy val emailConstraint: Constraint[String] = Constraint("constraints.email")(text =>
+    if text.trim.length == 0 then {
+      Invalid(Seq(ValidationError(messages("gmp.error.mandatory.an", messages("gmp.email")))))
+    } else if !text.trim.toUpperCase.matches(emailRegex.regex) then {
+      Invalid(Seq(ValidationError(messages("gmp.error.email.invalid"))))
+    } else if text.trim matches emailConstraintRegex then {
+      Invalid(Seq(ValidationError(messages("gmp.error.email.invalid"))))
+    } else {
+      Valid
+    }
+  )
 
 }

@@ -23,16 +23,15 @@ import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import utils.WireMockHelper
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import org.scalatest.concurrent.ScalaFutures
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import play.api.http.Status._
+import play.api.http.Status.*
 import play.api.libs.json.Json
 
 import scala.language.postfixOps
-
 
 class UpscanConnectorSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with MockitoSugar with WireMockHelper with ScalaFutures {
 
@@ -49,7 +48,7 @@ class UpscanConnectorSpec extends AnyWordSpec with Matchers with GuiceOneAppPerS
             )
         )
 
-        val result =  (connector.getUpscanFormData(request)).futureValue
+        val result = connector.getUpscanFormData(request).futureValue
         result shouldBe body.toUpscanInitiateResponse
       }
     }
@@ -63,7 +62,7 @@ class UpscanConnectorSpec extends AnyWordSpec with Matchers with GuiceOneAppPerS
                 .withStatus(BAD_REQUEST)
             )
         )
-          assert(connector.getUpscanFormData(request).failed.futureValue.isInstanceOf[UpstreamErrorResponse])
+        assert(connector.getUpscanFormData(request).failed.futureValue.isInstanceOf[UpstreamErrorResponse])
       }
 
       "upscan returns 5xx response" in {
@@ -79,12 +78,13 @@ class UpscanConnectorSpec extends AnyWordSpec with Matchers with GuiceOneAppPerS
     }
   }
 
-  implicit val defaultPatience: PatienceConfig = PatienceConfig(timeout = 50000 millis, interval = 15 millis)
-  lazy val connector: UpscanConnector = app.injector.instanceOf[UpscanConnector]
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  implicit val defaultPatience: PatienceConfig  = PatienceConfig(timeout = 50000 millis, interval = 15 millis)
+  lazy val connector:           UpscanConnector = app.injector.instanceOf[UpscanConnector]
+  implicit val hc:              HeaderCarrier   = HeaderCarrier()
   val request = UpscanInitiateRequest("callbackUrl", "successRedirectUrl", "errorRedirectUrl")
   override def fakeApplication(): Application = new GuiceApplicationBuilder()
     .configure(
       "microservice.services.upscan.port" -> server.port()
-    ).build()
+    )
+    .build()
 }

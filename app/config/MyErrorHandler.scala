@@ -29,19 +29,18 @@ import views.Views
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class MyErrorHandler @Inject()(
-                                val messagesApi: MessagesApi,
-                                val configuration: Configuration,
-                                implicit val applicationConfig: ApplicationConfig,
-                                views: Views
-                              ) (implicit val gmpContext: GmpContext, val ec: ExecutionContext) extends FrontendErrorHandler {
+class MyErrorHandler @Inject() (
+  val messagesApi:                MessagesApi,
+  val configuration:              Configuration,
+  implicit val applicationConfig: ApplicationConfig,
+  views:                          Views
+)(implicit val gmpContext: GmpContext, val ec: ExecutionContext)
+    extends FrontendErrorHandler {
 
-  override def standardErrorTemplate(pageTitle: String, heading: String, message: String)(implicit request: RequestHeader): Future[Html] = {
+  override def standardErrorTemplate(pageTitle: String, heading: String, message: String)(implicit request: RequestHeader): Future[Html] =
     Future.successful(views.globalError(pageTitle, heading, message))
-  }
 
-  override def notFoundTemplate(implicit request: RequestHeader): Future[Html] = {
+  override def notFoundTemplate(implicit request: RequestHeader): Future[Html] =
     Future.successful(views.globalPageNotFound())
-  }
 
 }

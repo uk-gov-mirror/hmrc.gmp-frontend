@@ -20,7 +20,7 @@ import com.google.inject.Singleton
 import forms.helper.Mappings
 import models.{GmpDate, InflationProof}
 import play.api.data.Form
-import play.api.data.Forms._
+import play.api.data.Forms.*
 import play.api.i18n.{Messages, MessagesImpl}
 import play.api.mvc.MessagesControllerComponents
 
@@ -28,25 +28,25 @@ import java.time.LocalDate
 import javax.inject.Inject
 
 @Singleton
-class InflationProofForm @Inject()(mcc: MessagesControllerComponents) extends Mappings {
+class InflationProofForm @Inject() (mcc: MessagesControllerComponents) extends Mappings {
   implicit lazy val messages: Messages = MessagesImpl(mcc.langs.availables.head, mcc.messagesApi)
 
   def dateCondition(data: Map[String, String]): Boolean = data.get("revaluate").contains("Yes")
-  def inflationProofForm(minYear: Int, maxYear: Int) = {
-    Form(mapping(
-      "revaluationDate" -> gmpDate(
-        maximumDateInclusive = Some(LocalDate.of(maxYear, 4, 5)),
-        minimumDateInclusive = Some(LocalDate.of(minYear, 4, 5)),
-        "revaluationDate.day",
-        "revaluationDate.month",
-        "revaluationDate.year",
-        "revaluationDate",
-        tooRecentArgs = Seq("5 April " + maxYear.toString),
-        tooFarInPastArgs = Seq("5 April " + minYear.toString),
-        onlyRequiredIf = Some(dateCondition)
-      ),
-      "revaluate" -> optional(text).verifying("error.required",{_.isDefined})
-    )(InflationProof.apply)((ip: InflationProof) => Some(ip.revaluationDate, ip.revaluate))
+  def inflationProofForm(minYear: Int, maxYear: Int) =
+    Form(
+      mapping(
+        "revaluationDate" -> gmpDate(
+          maximumDateInclusive = Some(LocalDate.of(maxYear, 4, 5)),
+          minimumDateInclusive = Some(LocalDate.of(minYear, 4, 5)),
+          "revaluationDate.day",
+          "revaluationDate.month",
+          "revaluationDate.year",
+          "revaluationDate",
+          tooRecentArgs = Seq("5 April " + maxYear.toString),
+          tooFarInPastArgs = Seq("5 April " + minYear.toString),
+          onlyRequiredIf = Some(dateCondition)
+        ),
+        "revaluate" -> optional(text).verifying("error.required", _.isDefined)
+      )(InflationProof.apply)((ip: InflationProof) => Some(ip.revaluationDate, ip.revaluate))
     )
-  }
 }

@@ -27,10 +27,14 @@ class BulkResultsNotFoundSpec extends GmpViewSpec {
     behave like pageWithTitle(messages("gmp.bulk.results_not_found"))
     behave like pageWithHeader(messages("gmp.bulk.results_not_found"))
 
-      "have correct paragraphs with text" in {
-        doc must haveParagraphWithText("We only keep results for 30 days. If you still need these calculations, you will have to upload the file again.")
-        doc must haveParagraphWithText("If you need access to a calculation result for longer than 30 days, you can save the file on your own computer or network after you have downloaded it.")
-        doc must haveParagraphWithText("To check other calculation results, go to the GMP dashboard.")
-      }
+    "have correct paragraphs with text" in {
+      doc must haveParagraphWithText(
+        "We only keep results for 30 days. If you still need these calculations, you will have to upload the file again."
+      )
+      doc must haveParagraphWithText(
+        "If you need access to a calculation result for longer than 30 days, you can save the file on your own computer or network after you have downloaded it."
+      )
+      doc must haveParagraphWithText("To check other calculation results, go to the GMP dashboard.")
+    }
   }
 }

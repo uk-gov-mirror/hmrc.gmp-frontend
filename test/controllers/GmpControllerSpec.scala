@@ -18,31 +18,30 @@ package controllers
 
 import config.ApplicationConfig
 import controllers.auth.AuthAction
-import models._
+import models.*
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.i18n.{Lang, MessagesApi, MessagesImpl}
 import play.api.mvc.MessagesControllerComponents
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import services.GMPSessionService
 import uk.gov.hmrc.auth.core.AuthConnector
 
 import scala.concurrent.ExecutionContext
 
-
 class GmpControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar {
 
-  val mockAuthConnector = mock[AuthConnector]
+  val mockAuthConnector     = mock[AuthConnector]
   val mockGMPSessionService = mock[GMPSessionService]
-  val mockAuthAction = mock[AuthAction]
-  implicit val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
-  implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
-  implicit val messagesAPI: MessagesApi = app.injector.instanceOf[MessagesApi]
-  implicit val messagesProvider: MessagesImpl = MessagesImpl(Lang("en"), messagesAPI)
-  implicit val ac: ApplicationConfig = app.injector.instanceOf[ApplicationConfig]
+  val mockAuthAction        = mock[AuthAction]
+  implicit val mcc:              MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
+  implicit val ec:               ExecutionContext             = app.injector.instanceOf[ExecutionContext]
+  implicit val messagesAPI:      MessagesApi                  = app.injector.instanceOf[MessagesApi]
+  implicit val messagesProvider: MessagesImpl                 = MessagesImpl(Lang("en"), messagesAPI)
+  implicit val ac:               ApplicationConfig            = app.injector.instanceOf[ApplicationConfig]
 
-  object TestGmpController extends GmpPageFlow(mockAuthConnector,mockGMPSessionService,FakeGmpContext,mcc,ac)
+  object TestGmpController extends GmpPageFlow(mockAuthConnector, mockGMPSessionService, FakeGmpContext, mcc, ac)
 
   val gmpSession = GmpSession(MemberDetails("", "", ""), "", "", None, None, Leaving(GmpDate(None, None, None), None), None)
 
@@ -52,7 +51,7 @@ class GmpControllerSpec extends PlaySpec with GuiceOneServerPerSuite with Mockit
 
       "return a not found when you send it a controller doesn't exist in the map" in {
         val gmpSession = GmpSession(MemberDetails("", "", ""), "", "", None, None, Leaving(GmpDate(None, None, None), None), None)
-        val result = TestGmpController.nextPage("BadController", gmpSession)
+        val result     = TestGmpController.nextPage("BadController", gmpSession)
         result.header.status must be(NOT_FOUND)
       }
 
@@ -60,7 +59,7 @@ class GmpControllerSpec extends PlaySpec with GuiceOneServerPerSuite with Mockit
 
         "redirect to the member details page" in {
           val result = TestGmpController.nextPage(PageType.PENSION_DETAILS, gmpSession)
-          result.header.status must be(SEE_OTHER)
+          result.header.status                      must be(SEE_OTHER)
           result.header.headers.get("LOCATION").get must be(routes.MemberDetailsController.get.url)
         }
       }
@@ -69,7 +68,7 @@ class GmpControllerSpec extends PlaySpec with GuiceOneServerPerSuite with Mockit
 
         "redirect to the scenario page" in {
           val result = TestGmpController.nextPage(PageType.MEMBER_DETAILS, gmpSession)
-          result.header.status must be(SEE_OTHER)
+          result.header.status                      must be(SEE_OTHER)
           result.header.headers.get("LOCATION").get must be(routes.ScenarioController.get.url)
         }
       }
@@ -79,9 +78,9 @@ class GmpControllerSpec extends PlaySpec with GuiceOneServerPerSuite with Mockit
         "redirect to the date of leaving page" in {
 
           val session = GmpSession(MemberDetails("", "", ""), "", "", None, None, Leaving(GmpDate(None, None, None), None), None)
-          val result = TestGmpController.nextPage(PageType.SCENARIO, session)
+          val result  = TestGmpController.nextPage(PageType.SCENARIO, session)
 
-          result.header.status must be(SEE_OTHER)
+          result.header.status                      must be(SEE_OTHER)
           result.header.headers.get("LOCATION").get must be(routes.DateOfLeavingController.get.url)
         }
       }
@@ -89,30 +88,62 @@ class GmpControllerSpec extends PlaySpec with GuiceOneServerPerSuite with Mockit
       "coming from the revaluation controller (RevaluationController[POST])" must {
 
         "redirect to the equalise page when member still in scheme" in {
-          val revalSession = GmpSession(MemberDetails("", "", ""), "", CalculationType.REVALUATION, Some(GmpDate(Some("1"), Some("1"), Some("1990"))), None, Leaving(GmpDate(None, None, None), Some(Leaving.NO)), None)
+          val revalSession = GmpSession(
+            MemberDetails("", "", ""),
+            "",
+            CalculationType.REVALUATION,
+            Some(GmpDate(Some("1"), Some("1"), Some("1990"))),
+            None,
+            Leaving(GmpDate(None, None, None), Some(Leaving.NO)),
+            None
+          )
           val result = TestGmpController.nextPage(PageType.REVALUATION, revalSession)
-          result.header.status must be(SEE_OTHER)
+          result.header.status                      must be(SEE_OTHER)
           result.header.headers.get("LOCATION").get must be(routes.EqualiseController.get.url)
         }
 
         "redirect to the equalise page member not in scheme, left before 2016" in {
-          val revalSession = GmpSession(MemberDetails("", "", ""), "", CalculationType.REVALUATION, Some(GmpDate(Some("1"), Some("1"), Some("2017"))), None, Leaving(GmpDate(Some("1"), Some("1"), Some("1990")), Some(Leaving.YES_BEFORE)), None)
+          val revalSession = GmpSession(
+            MemberDetails("", "", ""),
+            "",
+            CalculationType.REVALUATION,
+            Some(GmpDate(Some("1"), Some("1"), Some("2017"))),
+            None,
+            Leaving(GmpDate(Some("1"), Some("1"), Some("1990")), Some(Leaving.YES_BEFORE)),
+            None
+          )
           val result = TestGmpController.nextPage(PageType.REVALUATION, revalSession)
-          result.header.status must be(SEE_OTHER)
+          result.header.status                      must be(SEE_OTHER)
           result.header.headers.get("LOCATION").get must be(routes.RevaluationRateController.get.url)
         }
 
         "redirect to the equalise page member not in scheme, left after 2016, in same tax year" in {
-          val revalSession = GmpSession(MemberDetails("", "", ""), "", CalculationType.REVALUATION, Some(GmpDate(Some("1"), Some("1"), Some("2017"))), None, Leaving(GmpDate(Some("1"), Some("1"), Some("2017")), Some(Leaving.YES_AFTER)), None)
+          val revalSession = GmpSession(
+            MemberDetails("", "", ""),
+            "",
+            CalculationType.REVALUATION,
+            Some(GmpDate(Some("1"), Some("1"), Some("2017"))),
+            None,
+            Leaving(GmpDate(Some("1"), Some("1"), Some("2017")), Some(Leaving.YES_AFTER)),
+            None
+          )
           val result = TestGmpController.nextPage(PageType.REVALUATION, revalSession)
-          result.header.status must be(SEE_OTHER)
+          result.header.status                      must be(SEE_OTHER)
           result.header.headers.get("LOCATION").get must be(routes.EqualiseController.get.url)
         }
 
         "redirect to the equalise page member not in scheme, left after 2016, not in same tax year" in {
-          val revalSession = GmpSession(MemberDetails("", "", ""), "", CalculationType.REVALUATION, Some(GmpDate(Some("1"), Some("1"), Some("1990"))), None, Leaving(GmpDate(Some("1"), Some("1"), Some("2017")), Some(Leaving.YES_AFTER)), None)
+          val revalSession = GmpSession(
+            MemberDetails("", "", ""),
+            "",
+            CalculationType.REVALUATION,
+            Some(GmpDate(Some("1"), Some("1"), Some("1990"))),
+            None,
+            Leaving(GmpDate(Some("1"), Some("1"), Some("2017")), Some(Leaving.YES_AFTER)),
+            None
+          )
           val result = TestGmpController.nextPage(PageType.REVALUATION, revalSession)
-          result.header.status must be(SEE_OTHER)
+          result.header.status                      must be(SEE_OTHER)
           result.header.headers.get("LOCATION").get must be(routes.RevaluationRateController.get.url)
         }
       }
@@ -120,16 +151,24 @@ class GmpControllerSpec extends PlaySpec with GuiceOneServerPerSuite with Mockit
       "coming from the rate page (RevaluationRatePage[POST]" must {
 
         "redirect to the equalise page" in {
-          val revalSession = GmpSession(MemberDetails("", "", ""), "", CalculationType.REVALUATION, Some(GmpDate(Some("1"), Some("1"), Some("1990"))), Some("1"), Leaving(GmpDate(None, None, None), None), None)
+          val revalSession = GmpSession(
+            MemberDetails("", "", ""),
+            "",
+            CalculationType.REVALUATION,
+            Some(GmpDate(Some("1"), Some("1"), Some("1990"))),
+            Some("1"),
+            Leaving(GmpDate(None, None, None), None),
+            None
+          )
           val result = TestGmpController.nextPage(PageType.REVALUATION_RATE, revalSession)
-          result.header.status must be(SEE_OTHER)
+          result.header.status                      must be(SEE_OTHER)
           result.header.headers.get("LOCATION").get must be(routes.EqualiseController.get.url)
         }
 
         "redirect to the inflation proof page" in {
           val session = gmpSession.copy(scenario = CalculationType.SURVIVOR)
-          val result = TestGmpController.nextPage(PageType.REVALUATION_RATE, session)
-          result.header.status must be(SEE_OTHER)
+          val result  = TestGmpController.nextPage(PageType.REVALUATION_RATE, session)
+          result.header.status                      must be(SEE_OTHER)
           result.header.headers.get("LOCATION").get must be(routes.InflationProofController.get.url)
         }
       }
@@ -138,7 +177,7 @@ class GmpControllerSpec extends PlaySpec with GuiceOneServerPerSuite with Mockit
 
         "redirect to the results page" in {
           val result = TestGmpController.nextPage(PageType.EQUALISE, gmpSession)
-          result.header.status must be(SEE_OTHER)
+          result.header.status                      must be(SEE_OTHER)
           result.header.headers.get("LOCATION").get must be(routes.ResultsController.get.url)
         }
       }
@@ -155,7 +194,7 @@ class GmpControllerSpec extends PlaySpec with GuiceOneServerPerSuite with Mockit
 
         "redirect to the pension details page" in {
           val result = TestGmpController.previousPage(PageType.MEMBER_DETAILS, gmpSession)
-          result.header.status must be(SEE_OTHER)
+          result.header.status                      must be(SEE_OTHER)
           result.header.headers.get("LOCATION").get must be(routes.PensionDetailsController.get.url)
         }
       }
@@ -164,7 +203,7 @@ class GmpControllerSpec extends PlaySpec with GuiceOneServerPerSuite with Mockit
 
         "redirect to the member details page" in {
           val result = TestGmpController.previousPage(PageType.SCENARIO, gmpSession)
-          result.header.status must be(SEE_OTHER)
+          result.header.status                      must be(SEE_OTHER)
           result.header.headers.get("LOCATION").get must be(routes.MemberDetailsController.get.url)
         }
       }
@@ -173,7 +212,7 @@ class GmpControllerSpec extends PlaySpec with GuiceOneServerPerSuite with Mockit
 
         "redirect to the scenario page" in {
           val result = TestGmpController.previousPage(PageType.REVALUATION, gmpSession)
-          result.header.status must be(SEE_OTHER)
+          result.header.status                      must be(SEE_OTHER)
           result.header.headers.get("LOCATION").get must be(routes.DateOfLeavingController.get.url)
         }
       }
@@ -182,42 +221,60 @@ class GmpControllerSpec extends PlaySpec with GuiceOneServerPerSuite with Mockit
 
         "when revaluation calculation and same tax year" must {
 
-          val revaluationSession = GmpSession(MemberDetails("", "", ""), "", CalculationType.REVALUATION,
+          val revaluationSession = GmpSession(
+            MemberDetails("", "", ""),
+            "",
+            CalculationType.REVALUATION,
             revaluationDate = Some(GmpDate(Some("06"), Some("04"), Some("2010"))),
-            None, leaving = Leaving(GmpDate(Some("05"), Some("04"), Some("2011")), leaving = Some("Yes")), None)
+            None,
+            leaving = Leaving(GmpDate(Some("05"), Some("04"), Some("2011")), leaving = Some("Yes")),
+            None
+          )
 
           "redirect to the revaluation date page" in {
 
             val result = TestGmpController.previousPage(PageType.EQUALISE, revaluationSession)
-            result.header.status must be(SEE_OTHER)
+            result.header.status                      must be(SEE_OTHER)
             result.header.headers.get("LOCATION").get must be(routes.RevaluationController.get.url)
           }
         }
 
         "when revaluation calculation and NOT same tax year" must {
 
-          val revaluationSession = GmpSession(MemberDetails("", "", ""), "", CalculationType.REVALUATION,
-            revaluationDate = Some(GmpDate(Some("06"), Some("04"), Some("2010"))), None,
-            leaving = Leaving(GmpDate(Some("06"), Some("04"), Some("2011")), leaving = Some("Yes")), None)
+          val revaluationSession = GmpSession(
+            MemberDetails("", "", ""),
+            "",
+            CalculationType.REVALUATION,
+            revaluationDate = Some(GmpDate(Some("06"), Some("04"), Some("2010"))),
+            None,
+            leaving = Leaving(GmpDate(Some("06"), Some("04"), Some("2011")), leaving = Some("Yes")),
+            None
+          )
 
           "redirect to the revaluation rate page" in {
 
             val result = TestGmpController.previousPage(PageType.EQUALISE, revaluationSession)
-            result.header.status must be(SEE_OTHER)
+            result.header.status                      must be(SEE_OTHER)
             result.header.headers.get("LOCATION").get must be(routes.RevaluationRateController.get.url)
           }
         }
 
         "when revaluation calculation and no leaving date" must {
 
-          val revaluationSession = GmpSession(MemberDetails("", "", ""), "", CalculationType.REVALUATION,
-            revaluationDate = Some(GmpDate(Some("06"), Some("04"), Some("2010"))), None,
-            leaving = Leaving(GmpDate(None, None, None), leaving = Some("Yes")), None)
+          val revaluationSession = GmpSession(
+            MemberDetails("", "", ""),
+            "",
+            CalculationType.REVALUATION,
+            revaluationDate = Some(GmpDate(Some("06"), Some("04"), Some("2010"))),
+            None,
+            leaving = Leaving(GmpDate(None, None, None), leaving = Some("Yes")),
+            None
+          )
 
           "redirect to the revaluation rate page" in {
 
             val result = TestGmpController.previousPage(PageType.EQUALISE, revaluationSession)
-            result.header.status must be(SEE_OTHER)
+            result.header.status                      must be(SEE_OTHER)
             result.header.headers.get("LOCATION").get must be(routes.RevaluationRateController.get.url)
           }
         }
@@ -229,55 +286,80 @@ class GmpControllerSpec extends PlaySpec with GuiceOneServerPerSuite with Mockit
           "redirect to the leaving date page" in {
 
             val result = TestGmpController.previousPage(PageType.EQUALISE, spaSession)
-            result.header.status must be(SEE_OTHER)
+            result.header.status                      must be(SEE_OTHER)
             result.header.headers.get("LOCATION").get must be(routes.DateOfLeavingController.get.url)
           }
         }
 
         "when pa calculation and has not left the scheme" must {
 
-          val paSession = GmpSession(MemberDetails("", "", ""), "", CalculationType.PAYABLE_AGE, None, None, Leaving(GmpDate(None, None, None), None), None)
+          val paSession =
+            GmpSession(MemberDetails("", "", ""), "", CalculationType.PAYABLE_AGE, None, None, Leaving(GmpDate(None, None, None), None), None)
 
           "redirect to the leaving date page" in {
 
             val result = TestGmpController.previousPage(PageType.EQUALISE, paSession)
-            result.header.status must be(SEE_OTHER)
+            result.header.status                      must be(SEE_OTHER)
             result.header.headers.get("LOCATION").get must be(routes.DateOfLeavingController.get.url)
           }
         }
 
         "when spa calculation and has left the scheme" must {
 
-          val spaSession = GmpSession(MemberDetails("", "", ""), "", CalculationType.SPA, None, None, Leaving(GmpDate(Some("1"), Some("1"), Some("2015")), Some(Leaving.YES_AFTER)), None)
+          val spaSession = GmpSession(
+            MemberDetails("", "", ""),
+            "",
+            CalculationType.SPA,
+            None,
+            None,
+            Leaving(GmpDate(Some("1"), Some("1"), Some("2015")), Some(Leaving.YES_AFTER)),
+            None
+          )
 
           "redirect to the revaluation rate page" in {
 
             val result = TestGmpController.previousPage(PageType.EQUALISE, spaSession)
-            result.header.status must be(SEE_OTHER)
+            result.header.status                      must be(SEE_OTHER)
             result.header.headers.get("LOCATION").get must be(routes.RevaluationRateController.get.url)
           }
         }
 
         "when pa calculation and has left the scheme" must {
 
-          val paSession = GmpSession(MemberDetails("", "", ""), "", CalculationType.PAYABLE_AGE, None, None, Leaving(GmpDate(Some("1"), Some("1"), Some("2015")), Some(Leaving.YES_AFTER)), None)
+          val paSession = GmpSession(
+            MemberDetails("", "", ""),
+            "",
+            CalculationType.PAYABLE_AGE,
+            None,
+            None,
+            Leaving(GmpDate(Some("1"), Some("1"), Some("2015")), Some(Leaving.YES_AFTER)),
+            None
+          )
 
           "redirect to the revaluation rate page" in {
 
             val result = TestGmpController.previousPage(PageType.EQUALISE, paSession)
-            result.header.status must be(SEE_OTHER)
+            result.header.status                      must be(SEE_OTHER)
             result.header.headers.get("LOCATION").get must be(routes.RevaluationRateController.get.url)
           }
         }
 
         "when dol calculation" must {
 
-          val dolSession = GmpSession(MemberDetails("", "", ""), "", CalculationType.DOL, None, None, Leaving(GmpDate(Some("1"), Some("1"), Some("2015")), Some(Leaving.YES_AFTER)), None)
+          val dolSession = GmpSession(
+            MemberDetails("", "", ""),
+            "",
+            CalculationType.DOL,
+            None,
+            None,
+            Leaving(GmpDate(Some("1"), Some("1"), Some("2015")), Some(Leaving.YES_AFTER)),
+            None
+          )
 
           "redirect to the leaving date page" in {
 
             val result = TestGmpController.previousPage(PageType.EQUALISE, dolSession)
-            result.header.status must be(SEE_OTHER)
+            result.header.status                      must be(SEE_OTHER)
             result.header.headers.get("LOCATION").get must be(routes.DateOfLeavingController.get.url)
           }
         }
@@ -292,40 +374,57 @@ class GmpControllerSpec extends PlaySpec with GuiceOneServerPerSuite with Mockit
 
           "redirect to the termination page" in {
             val result = TestGmpController.previousPage(PageType.REVALUATION_RATE, spaSession)
-            result.header.status must be(SEE_OTHER)
+            result.header.status                      must be(SEE_OTHER)
             result.header.headers.get("LOCATION").get must be(routes.DateOfLeavingController.get.url)
           }
         }
 
         "when GMP payable age calculation" must {
 
-          val paSession = GmpSession(MemberDetails("", "", ""), "", CalculationType.PAYABLE_AGE, None, None, Leaving(GmpDate(None, None, None), None), None)
+          val paSession =
+            GmpSession(MemberDetails("", "", ""), "", CalculationType.PAYABLE_AGE, None, None, Leaving(GmpDate(None, None, None), None), None)
 
           "redirect to the scenario page" in {
             val result = TestGmpController.previousPage(PageType.REVALUATION_RATE, paSession)
-            result.header.status must be(SEE_OTHER)
+            result.header.status                      must be(SEE_OTHER)
             result.header.headers.get("LOCATION").get must be(routes.DateOfLeavingController.get.url)
           }
         }
 
         "when revaluation calculation" must {
 
-          val revalSession = GmpSession(MemberDetails("", "", ""), "", CalculationType.REVALUATION, Some(GmpDate(Some("1"), Some("1"), Some("1990"))), Some("1"), Leaving(GmpDate(None, None, None), None), None)
+          val revalSession = GmpSession(
+            MemberDetails("", "", ""),
+            "",
+            CalculationType.REVALUATION,
+            Some(GmpDate(Some("1"), Some("1"), Some("1990"))),
+            Some("1"),
+            Leaving(GmpDate(None, None, None), None),
+            None
+          )
 
           "redirect to the revaluation page" in {
             val result = TestGmpController.previousPage(PageType.REVALUATION_RATE, revalSession)
-            result.header.status must be(SEE_OTHER)
+            result.header.status                      must be(SEE_OTHER)
             result.header.headers.get("LOCATION").get must be(routes.RevaluationController.get.url)
           }
         }
 
         "when survivor calculation" must {
 
-          val revalSession = GmpSession(MemberDetails("", "", ""), "", CalculationType.SURVIVOR, Some(GmpDate(Some("1"), Some("1"), Some("1990"))), Some("1"), Leaving(GmpDate(None, None, None), None), None)
+          val revalSession = GmpSession(
+            MemberDetails("", "", ""),
+            "",
+            CalculationType.SURVIVOR,
+            Some(GmpDate(Some("1"), Some("1"), Some("1990"))),
+            Some("1"),
+            Leaving(GmpDate(None, None, None), None),
+            None
+          )
 
           "redirect to the date of leaving page" in {
             val result = TestGmpController.previousPage(PageType.REVALUATION_RATE, revalSession)
-            result.header.status must be(SEE_OTHER)
+            result.header.status                      must be(SEE_OTHER)
             result.header.headers.get("LOCATION").get must be(routes.DateOfLeavingController.get.url)
           }
         }

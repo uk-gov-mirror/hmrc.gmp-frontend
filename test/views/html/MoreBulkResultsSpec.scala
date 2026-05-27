@@ -28,7 +28,7 @@ import java.time.format.DateTimeFormatter
 class MoreBulkResultsSpec extends GmpViewSpec {
 
   lazy val layout = app.injector.instanceOf[views.html.Layout]
-  lazy val table = app.injector.instanceOf[GovukTable]
+  lazy val table  = app.injector.instanceOf[GovukTable]
   override def view: Html = new views.html.more_bulk_results(layout, table)(bulkPreviousRequestsList)
 
   "MoreBulkResults page" must {
@@ -43,15 +43,15 @@ class MoreBulkResultsSpec extends GmpViewSpec {
 
       doc must haveTdWithText("fake")
       doc must haveTdWithText(LocalDateTime.now.format(DateTimeFormatter.ofPattern("dd MMMM yyyy")))
-      //doc must haveTdWithText("30 Days")
+      // doc must haveTdWithText("30 Days")
     }
 
-
   }
-  private val bulkPreviousRequestsList: List[models.BulkPreviousRequest] = List(BulkPreviousRequest(uploadReference = "upload",
-    reference = "fake", timestamp = LocalDateTime.now, processedDateTime = LocalDateTime.now),BulkPreviousRequest(uploadReference = "upload",
-    reference = "fake", timestamp = LocalDateTime.now, processedDateTime = LocalDateTime.now),BulkPreviousRequest(uploadReference = "upload",
-    reference = "fake", timestamp = LocalDateTime.now, processedDateTime = LocalDateTime.now),BulkPreviousRequest(uploadReference = "upload",
-    reference = "fake", timestamp = LocalDateTime.now, processedDateTime = LocalDateTime.now))
+  private val bulkPreviousRequestsList: List[models.BulkPreviousRequest] = List(
+    BulkPreviousRequest(uploadReference = "upload", reference = "fake", timestamp = LocalDateTime.now, processedDateTime = LocalDateTime.now),
+    BulkPreviousRequest(uploadReference = "upload", reference = "fake", timestamp = LocalDateTime.now, processedDateTime = LocalDateTime.now),
+    BulkPreviousRequest(uploadReference = "upload", reference = "fake", timestamp = LocalDateTime.now, processedDateTime = LocalDateTime.now),
+    BulkPreviousRequest(uploadReference = "upload", reference = "fake", timestamp = LocalDateTime.now, processedDateTime = LocalDateTime.now)
+  )
 
 }

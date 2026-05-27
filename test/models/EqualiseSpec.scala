@@ -25,12 +25,12 @@ class EqualiseSpec extends AnyWordSpec with Matchers {
   "Equalise Json formats" should {
     "serialise Equalise to Json" in {
       val equalise = Equalise(Some(2))
-      val json = Json.toJson(equalise)
+      val json     = Json.toJson(equalise)
       (json \ "equalise").asOpt[Int] shouldBe Some(2)
     }
 
     "deserialise Json to Equalise" in {
-      val json = Json.obj("equalise" -> Some(2))
+      val json     = Json.obj("equalise" -> Some(2))
       val equalise = json.as[Equalise]
       equalise shouldBe Equalise(Some(2))
     }

@@ -25,9 +25,9 @@ import play.api.mvc.MessagesControllerComponents
 
 class BulkReferenceFormSpec extends PlaySpec with GuiceOneAppPerSuite {
 
-  implicit lazy val messagesAPI: MessagesApi = app.injector.instanceOf[MessagesApi]
+  implicit lazy val messagesAPI:      MessagesApi  = app.injector.instanceOf[MessagesApi]
   implicit lazy val messagesProvider: MessagesImpl = MessagesImpl(Lang("en"), messagesAPI)
-  lazy val mcc = app.injector.instanceOf[MessagesControllerComponents]
+  lazy val mcc               = app.injector.instanceOf[MessagesControllerComponents]
   lazy val bulkReferenceForm = new BulkReferenceForm(mcc).bulkReferenceForm
   val fromJsonMaxChars: Int = 102400
 
@@ -35,7 +35,7 @@ class BulkReferenceFormSpec extends PlaySpec with GuiceOneAppPerSuite {
     "return no errors with valid data" in {
 
       val postData = Json.obj(
-        "email" -> "dan@hmrc.com",
+        "email"     -> "dan@hmrc.com",
         "reference" -> "Reference"
       )
       val validatedForm = bulkReferenceForm.bind(postData, fromJsonMaxChars)
@@ -47,7 +47,7 @@ class BulkReferenceFormSpec extends PlaySpec with GuiceOneAppPerSuite {
       "return an error if email missing" in {
 
         val postData = Json.obj(
-          "email" -> "",
+          "email"     -> "",
           "reference" -> "Reference"
         )
         val validatedForm = bulkReferenceForm.bind(postData, fromJsonMaxChars)
@@ -58,7 +58,7 @@ class BulkReferenceFormSpec extends PlaySpec with GuiceOneAppPerSuite {
         .foreach { email =>
           s"return an error if $email invalid" in {
             val postData = Json.obj(
-              "email" -> s"$email",
+              "email"     -> s"$email",
               "reference" -> "Reference"
             )
             val validatedForm = bulkReferenceForm.bind(postData, fromJsonMaxChars)
@@ -71,7 +71,7 @@ class BulkReferenceFormSpec extends PlaySpec with GuiceOneAppPerSuite {
     "reference" must {
       "return an error if missing" in {
         val postData = Json.obj(
-          "email" -> "dan@hmrc.com",
+          "email"     -> "dan@hmrc.com",
           "reference" -> ""
         )
         val validatedForm = bulkReferenceForm.bind(postData, fromJsonMaxChars)
@@ -81,7 +81,7 @@ class BulkReferenceFormSpec extends PlaySpec with GuiceOneAppPerSuite {
 
       "return an error if more than 99 chars" in {
         val postData = Json.obj(
-          "email" -> "dan@hmrc.com",
+          "email"     -> "dan@hmrc.com",
           "reference" -> "a" * 100
         )
         val validatedForm = bulkReferenceForm.bind(postData, fromJsonMaxChars)
@@ -91,7 +91,7 @@ class BulkReferenceFormSpec extends PlaySpec with GuiceOneAppPerSuite {
 
       "return an error if special characters" in {
         val postData = Json.obj(
-          "email" -> "dan@hmrc.com",
+          "email"     -> "dan@hmrc.com",
           "reference" -> "Calculation@ABCDEFGHIJKLMNOPQRSTUVWXYZ*&^%$£"
         )
         val validatedForm = bulkReferenceForm.bind(postData, fromJsonMaxChars)
@@ -101,7 +101,7 @@ class BulkReferenceFormSpec extends PlaySpec with GuiceOneAppPerSuite {
 
       "return an error if white spaces" in {
         val postData = Json.obj(
-          "email" -> "dan@hmrc.com",
+          "email"     -> "dan@hmrc.com",
           "reference" -> "Calcu lation"
         )
         val validatedForm = bulkReferenceForm.bind(postData, fromJsonMaxChars)
@@ -113,7 +113,7 @@ class BulkReferenceFormSpec extends PlaySpec with GuiceOneAppPerSuite {
     "email and reference" must {
       "return 2 errors if both missing" in {
         val postData = Json.obj(
-          "email" -> "",
+          "email"     -> "",
           "reference" -> ""
         )
         val validatedForm = bulkReferenceForm.bind(postData, fromJsonMaxChars)

@@ -19,16 +19,16 @@ package controllers
 import config.{ApplicationConfig, GmpSessionCache}
 import controllers.auth.{AuthAction, FakeAuthAction}
 import forms.RevaluationForm
-import models._
+import models.*
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito._
+import org.mockito.Mockito.*
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import org.scalatestplus.play.PlaySpec
 import play.api.i18n.{Lang, Messages, MessagesApi, MessagesImpl}
 import play.api.mvc.MessagesControllerComponents
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import services.GMPSessionService
 import uk.gov.hmrc.auth.core.AuthConnector
 import views.Views
@@ -37,17 +37,17 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class RevaluationControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar {
 
-  val mockAuthConnector = mock[AuthConnector]
+  val mockAuthConnector     = mock[AuthConnector]
   val mockGMPSessionService = mock[GMPSessionService]
-  val mockAuthAction = mock[AuthAction]
-  implicit val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
-  implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
-  implicit val messagesAPI: MessagesApi = app.injector.instanceOf[MessagesApi]
-  implicit val messagesProvider: MessagesImpl = MessagesImpl(Lang("en"), messagesAPI)
-  implicit val ac: ApplicationConfig = app.injector.instanceOf[ApplicationConfig]
-  implicit val gmpSessionCache: GmpSessionCache = app.injector.instanceOf[GmpSessionCache]
+  val mockAuthAction        = mock[AuthAction]
+  implicit val mcc:              MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
+  implicit val ec:               ExecutionContext             = app.injector.instanceOf[ExecutionContext]
+  implicit val messagesAPI:      MessagesApi                  = app.injector.instanceOf[MessagesApi]
+  implicit val messagesProvider: MessagesImpl                 = MessagesImpl(Lang("en"), messagesAPI)
+  implicit val ac:               ApplicationConfig            = app.injector.instanceOf[ApplicationConfig]
+  implicit val gmpSessionCache:  GmpSessionCache              = app.injector.instanceOf[GmpSessionCache]
   lazy val revaluationForm = new RevaluationForm(mcc)
-  lazy val views = app.injector.instanceOf[Views]
+  lazy val views           = app.injector.instanceOf[Views]
 
   val gmpSession = GmpSession(
     MemberDetails("firstForename", "surname", "AB1234567C"),
@@ -61,8 +61,19 @@ class RevaluationControllerSpec extends PlaySpec with GuiceOneServerPerSuite wit
 
   val baseValidDate = GmpDate(day = Some("31"), month = Some("1"), year = Some("2015"))
 
-  object TestRevaluationController extends RevaluationController(FakeAuthAction, mockAuthConnector, mockGMPSessionService,
-    FakeGmpContext, mcc, ac, revaluationForm, ec, gmpSessionCache, views)
+  object TestRevaluationController
+      extends RevaluationController(
+        FakeAuthAction,
+        mockAuthConnector,
+        mockGMPSessionService,
+        FakeGmpContext,
+        mcc,
+        ac,
+        revaluationForm,
+        ec,
+        gmpSessionCache,
+        views
+      )
 
   "Revaluation controller" must {
 
@@ -70,10 +81,9 @@ class RevaluationControllerSpec extends PlaySpec with GuiceOneServerPerSuite wit
 
       "respond with ok" in {
 
-        when(mockGMPSessionService.fetchGmpSession()(using any())).thenReturn(Future.successful
-        (Some(gmpSession)))
+        when(mockGMPSessionService.fetchGmpSession()(using any())).thenReturn(Future.successful(Some(gmpSession)))
         val result = TestRevaluationController.get(FakeRequest())
-        status(result) must equal(OK)
+        status(result)          must equal(OK)
         contentAsString(result) must include("When would you like the calculation made to?")
         contentAsString(result) must include(Messages("gmp.revaluation.question"))
         contentAsString(result) must include(Messages("gmp.back.link"))
@@ -82,7 +92,7 @@ class RevaluationControllerSpec extends PlaySpec with GuiceOneServerPerSuite wit
       "respond with ok when no leaving" in {
         when(mockGMPSessionService.fetchLeaving()(using any())).thenReturn(Future.successful(None))
         val result = TestRevaluationController.get(FakeRequest())
-        status(result) must equal(OK)
+        status(result)          must equal(OK)
         contentAsString(result) must include("When would you like the calculation made to?")
         contentAsString(result) must include(Messages("gmp.revaluation.question"))
       }
@@ -94,14 +104,13 @@ class RevaluationControllerSpec extends PlaySpec with GuiceOneServerPerSuite wit
     "authenticated users" must {
 
       val memberDetails = MemberDetails("", "", "")
-      val session = GmpSession(memberDetails, "", CalculationType.REVALUATION, None, None,
-        Leaving(GmpDate(None, None, None), None), None)
+      val session       = GmpSession(memberDetails, "", CalculationType.REVALUATION, None, None, Leaving(GmpDate(None, None, None), None), None)
 
       "redirect to the date of leaving page" in {
 
         when(mockGMPSessionService.fetchGmpSession()(using any())).thenReturn(Future.successful(Some(session)))
         val result = TestRevaluationController.back(FakeRequest())
-        status(result) must equal(SEE_OTHER)
+        status(result)               must equal(SEE_OTHER)
         redirectLocation(result).get must include("/left-scheme")
       }
     }
@@ -122,24 +131,42 @@ class RevaluationControllerSpec extends PlaySpec with GuiceOneServerPerSuite wit
     "authenticated users" must {
 
       "with invalid data" must {
-        val gmpSession = GmpSession(MemberDetails("", "", ""), "S1301234T", CalculationType.REVALUATION, None, Some(""),
-          Leaving(GmpDate(None, None, None), None), None)
+        val gmpSession = GmpSession(
+          MemberDetails("", "", ""),
+          "S1301234T",
+          CalculationType.REVALUATION,
+          None,
+          Some(""),
+          Leaving(GmpDate(None, None, None), None),
+          None
+        )
 
         "respond with BAD_REQUEST" in {
 
           when(mockGMPSessionService.fetchGmpSession()(using any())).thenReturn(Future.successful(Some(gmpSession)))
-          val result = TestRevaluationController.post(FakeRequest().withMethod("POST")
-            .withFormUrlEncodedBody("RevaluationDate.Leaving.leavingDate.GmpDate" -> "",
-              "RevaluationDate.revaluationDate" -> "31, 2, 2015"))
-          status(result) mustBe (BAD_REQUEST)
+          val result = TestRevaluationController.post(
+            FakeRequest()
+              .withMethod("POST")
+              .withFormUrlEncodedBody("RevaluationDate.Leaving.leavingDate.GmpDate" -> "", "RevaluationDate.revaluationDate" -> "31, 2, 2015")
+          )
+          status(result) mustBe BAD_REQUEST
         }
 
         "display the errors" in {
           when(mockGMPSessionService.fetchGmpSession()(using any())).thenReturn(Future.successful(Some(gmpSession)))
-          val result = TestRevaluationController.post(FakeRequest().withMethod("POST")
-            .withFormUrlEncodedBody("leaving.leavingDate.day" -> "", "leaving.leavingDate.month" -> "",
-              "leaving.leavingDate.year" -> "", "leaving.leaving" -> "", "revaluationDate.day" -> "31",
-              "revaluationDate.month" -> "2", "revaluationDate.year" -> "2015"))
+          val result = TestRevaluationController.post(
+            FakeRequest()
+              .withMethod("POST")
+              .withFormUrlEncodedBody(
+                "leaving.leavingDate.day"   -> "",
+                "leaving.leavingDate.month" -> "",
+                "leaving.leavingDate.year"  -> "",
+                "leaving.leaving"           -> "",
+                "revaluationDate.day"       -> "31",
+                "revaluationDate.month"     -> "2",
+                "revaluationDate.year"      -> "2015"
+              )
+          )
 
           contentAsString(result) must include(Messages("gmp.error.date.invalid"))
         }
@@ -147,29 +174,55 @@ class RevaluationControllerSpec extends PlaySpec with GuiceOneServerPerSuite wit
 
       "with valid data" must {
 
-        val gmpSession = GmpSession(MemberDetails("", "", ""), "S1301234T", CalculationType.REVALUATION, None, Some(""),
-          Leaving(GmpDate(None, None, None), None), None)
+        val gmpSession = GmpSession(
+          MemberDetails("", "", ""),
+          "S1301234T",
+          CalculationType.REVALUATION,
+          None,
+          Some(""),
+          Leaving(GmpDate(None, None, None), None),
+          None
+        )
 
         "redirect" in {
           when(mockGMPSessionService.fetchGmpSession()(using any())).thenReturn(Future.successful(Some(gmpSession)))
           when(mockGMPSessionService.cacheRevaluationDate(any())(using any())).thenReturn(Future.successful(Some(gmpSession)))
 
-          val result = TestRevaluationController.post(FakeRequest().withMethod("POST")
-            .withFormUrlEncodedBody("leaving.leavingDate.day" -> "", "leaving.leavingDate.month" -> "",
-              "leaving.leavingDate.year" -> "", "leaving.leaving" -> "", "revaluationDate.day" -> "31",
-              "revaluationDate.month" -> "3", "revaluationDate.year" -> "2015"))
+          val result = TestRevaluationController.post(
+            FakeRequest()
+              .withMethod("POST")
+              .withFormUrlEncodedBody(
+                "leaving.leavingDate.day"   -> "",
+                "leaving.leavingDate.month" -> "",
+                "leaving.leavingDate.year"  -> "",
+                "leaving.leaving"           -> "",
+                "revaluationDate.day"       -> "31",
+                "revaluationDate.month"     -> "3",
+                "revaluationDate.year"      -> "2015"
+              )
+          )
           status(result) must equal(SEE_OTHER)
         }
-
 
         "respond with error when rate not stored" in {
           when(mockGMPSessionService.cacheRevaluationDate(any())(using any())).thenReturn(Future.successful(None))
 
           intercept[RuntimeException] {
-            await(TestRevaluationController.post(FakeRequest().withMethod("POST")
-              .withFormUrlEncodedBody("leaving.leavingDate.day" -> "", "leaving.leavingDate.month" -> "",
-                "leaving.leavingDate.year" -> "", "leaving.leaving" -> "", "revaluationDate.day" -> "31",
-                "revaluationDate.month" -> "3", "revaluationDate.year" -> "2015")))
+            await(
+              TestRevaluationController.post(
+                FakeRequest()
+                  .withMethod("POST")
+                  .withFormUrlEncodedBody(
+                    "leaving.leavingDate.day"   -> "",
+                    "leaving.leavingDate.month" -> "",
+                    "leaving.leavingDate.year"  -> "",
+                    "leaving.leaving"           -> "",
+                    "revaluationDate.day"       -> "31",
+                    "revaluationDate.month"     -> "3",
+                    "revaluationDate.year"      -> "2015"
+                  )
+              )
+            )
           }
         }
       }

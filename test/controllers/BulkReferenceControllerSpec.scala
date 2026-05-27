@@ -20,16 +20,16 @@ import java.util.UUID
 import config.{ApplicationConfig, GmpSessionCache}
 import controllers.auth.FakeAuthAction
 import forms.BulkReferenceForm
-import models._
+import models.*
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito._
+import org.mockito.Mockito.*
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.i18n.{Lang, Messages, MessagesApi, MessagesImpl}
 import play.api.mvc.MessagesControllerComponents
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import services.GMPSessionService
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
@@ -38,24 +38,34 @@ import views.Views
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class BulkReferenceControllerSpec extends PlaySpec  with MockitoSugar with GuiceOneAppPerSuite{
+class BulkReferenceControllerSpec extends PlaySpec with MockitoSugar with GuiceOneAppPerSuite {
 
-  val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  val mockAuthConnector:  AuthConnector     = mock[AuthConnector]
   val mockSessionService: GMPSessionService = mock[GMPSessionService]
 
-  implicit lazy val hc: HeaderCarrier = new HeaderCarrier(sessionId = Some(SessionId(s"session-${UUID.randomUUID}")))
-  implicit val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
-  implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
-  implicit val messagesApi: MessagesApi = app.injector.instanceOf[MessagesApi]
-  implicit val messagesProvider: MessagesImpl = MessagesImpl(Lang("en"), messagesApi)
-  implicit val ac: ApplicationConfig = app.injector.instanceOf[ApplicationConfig]
-  implicit val gmpSessionCache: GmpSessionCache = app.injector.instanceOf[GmpSessionCache]
+  implicit lazy val hc:          HeaderCarrier                = new HeaderCarrier(sessionId = Some(SessionId(s"session-${UUID.randomUUID}")))
+  implicit val mcc:              MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
+  implicit val ec:               ExecutionContext             = app.injector.instanceOf[ExecutionContext]
+  implicit val messagesApi:      MessagesApi                  = app.injector.instanceOf[MessagesApi]
+  implicit val messagesProvider: MessagesImpl                 = MessagesImpl(Lang("en"), messagesApi)
+  implicit val ac:               ApplicationConfig            = app.injector.instanceOf[ApplicationConfig]
+  implicit val gmpSessionCache:  GmpSessionCache              = app.injector.instanceOf[GmpSessionCache]
   lazy val bulkReferenceForm = new BulkReferenceForm(mcc)
-  lazy val views = app.injector.instanceOf[Views]
+  lazy val views             = app.injector.instanceOf[Views]
 
-  object TestBulkReferenceController extends BulkReferenceController(
-    FakeAuthAction, mockAuthConnector,mockSessionService,
-    FakeGmpContext,bulkReferenceForm,mcc,ec,ac,gmpSessionCache, views) {}
+  object TestBulkReferenceController
+      extends BulkReferenceController(
+        FakeAuthAction,
+        mockAuthConnector,
+        mockSessionService,
+        FakeGmpContext,
+        bulkReferenceForm,
+        mcc,
+        ec,
+        ac,
+        gmpSessionCache,
+        views
+      ) {}
 
   "BulkReferenceController" must {
 
@@ -64,11 +74,10 @@ class BulkReferenceControllerSpec extends PlaySpec  with MockitoSugar with Guice
       "authenticated users" must {
         "respond with ok" in {
           val result = TestBulkReferenceController.get(FakeRequest())
-          status(result) must equal(OK)
-              contentAsString(result) must include(Messages("gmp.bulk_reference.header"))
-              contentAsString(result) must include(Messages("gmp.reference.calcname"))
-              contentAsString(result) must include(Messages("gmp.back.link"))
-
+          status(result)          must equal(OK)
+          contentAsString(result) must include(Messages("gmp.bulk_reference.header"))
+          contentAsString(result) must include(Messages("gmp.reference.calcname"))
+          contentAsString(result) must include(Messages("gmp.back.link"))
 
         }
       }
@@ -76,45 +85,56 @@ class BulkReferenceControllerSpec extends PlaySpec  with MockitoSugar with Guice
 
     "bulk reference POST " must {
 
-      val validRequest = BulkReference("dan@hmrc.com", "Reference")
+      val validRequest           = BulkReference("dan@hmrc.com", "Reference")
       val validRequestWithSpaces = BulkReference("dan@hmrc.com   ", "Reference   ")
-      val gmpBulkSession = GmpBulkSession(None, None, None)
+      val gmpBulkSession         = GmpBulkSession(None, None, None)
 
       "respond with bad request missing email and reference" in {
 
-          val result = TestBulkReferenceController.post(FakeRequest().withMethod("POST")
-            .withFormUrlEncodedBody("email" -> "", "reference" -> ""))
-          status(result) mustBe BAD_REQUEST
-          contentAsString(result) must include(Messages("gmp.error.mandatory", Messages("gmp.reference")))
+        val result = TestBulkReferenceController.post(
+          FakeRequest()
+            .withMethod("POST")
+            .withFormUrlEncodedBody("email" -> "", "reference" -> "")
+        )
+        status(result) mustBe BAD_REQUEST
+        contentAsString(result) must include(Messages("gmp.error.mandatory", Messages("gmp.reference")))
       }
 
       "throw an exception when can't cache email and reference" in {
         when(mockSessionService.cacheEmailAndReference(any(), any())(using any())).thenReturn(Future.successful(None))
 
-          val result = TestBulkReferenceController.post(FakeRequest().withMethod("POST")
-            .withFormUrlEncodedBody("email" -> validRequest.email, "reference" -> validRequest.reference))
-          intercept[RuntimeException]{
-            status(result) must equal(BAD_REQUEST)
+        val result = TestBulkReferenceController.post(
+          FakeRequest()
+            .withMethod("POST")
+            .withFormUrlEncodedBody("email" -> validRequest.email, "reference" -> validRequest.reference)
+        )
+        intercept[RuntimeException] {
+          status(result) must equal(BAD_REQUEST)
         }
       }
 
       "validate email and reference, cache and redirect" in {
         when(mockSessionService.cacheEmailAndReference(any(), any())(using any())).thenReturn(Future.successful(Some(gmpBulkSession)))
 
-          val result = TestBulkReferenceController.post(FakeRequest().withMethod("POST")
-            .withFormUrlEncodedBody("email" -> validRequest.email, "reference" -> validRequest.reference))
-          status(result) must equal(SEE_OTHER)
-          redirectLocation(result).get must include("/request-received")
+        val result = TestBulkReferenceController.post(
+          FakeRequest()
+            .withMethod("POST")
+            .withFormUrlEncodedBody("email" -> validRequest.email, "reference" -> validRequest.reference)
+        )
+        status(result)               must equal(SEE_OTHER)
+        redirectLocation(result).get must include("/request-received")
       }
 
       "validate email and reference with spaces, cache and redirect" in {
         when(mockSessionService.cacheEmailAndReference(any(), any())(using any())).thenReturn(Future.successful(Some(gmpBulkSession)))
 
-          val result = TestBulkReferenceController.post()(FakeRequest().withMethod("POST")
-            .withFormUrlEncodedBody("email" -> validRequestWithSpaces.email,
-              "reference" -> validRequestWithSpaces.reference))
-          status(result) must equal(SEE_OTHER)
-          redirectLocation(result).get must include("/request-received")
+        val result = TestBulkReferenceController.post()(
+          FakeRequest()
+            .withMethod("POST")
+            .withFormUrlEncodedBody("email" -> validRequestWithSpaces.email, "reference" -> validRequestWithSpaces.reference)
+        )
+        status(result)               must equal(SEE_OTHER)
+        redirectLocation(result).get must include("/request-received")
       }
     }
 
@@ -122,9 +142,9 @@ class BulkReferenceControllerSpec extends PlaySpec  with MockitoSugar with Guice
 
       "authorised users redirect" in {
 
-          val result = TestBulkReferenceController.back(FakeRequest())
-          status(result) must equal(SEE_OTHER)
-          redirectLocation(result).get must include("/upload-csv")
+        val result = TestBulkReferenceController.back(FakeRequest())
+        status(result)               must equal(SEE_OTHER)
+        redirectLocation(result).get must include("/upload-csv")
       }
 
     }

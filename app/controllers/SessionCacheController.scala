@@ -27,35 +27,32 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class SessionCacheController @Inject()(authAction: AuthAction,
-                                       override val authConnector: AuthConnector,
-                                       ac:ApplicationConfig,
-                                       GMPSessionService: GMPSessionService,
-                                       implicit val config:GmpContext,
-                                       override val messagesControllerComponents: MessagesControllerComponents,
-                                       implicit val executionContext: ExecutionContext,
-                                       implicit val gmpSessionCache: GmpSessionCache
-                                      ) extends GmpPageFlow(authConnector,GMPSessionService,config,messagesControllerComponents,ac) with Logging {
+class SessionCacheController @Inject() (
+  authAction:                                AuthAction,
+  override val authConnector:                AuthConnector,
+  ac:                                        ApplicationConfig,
+  GMPSessionService:                         GMPSessionService,
+  implicit val config:                       GmpContext,
+  override val messagesControllerComponents: MessagesControllerComponents,
+  implicit val executionContext:             ExecutionContext,
+  implicit val gmpSessionCache:              GmpSessionCache
+) extends GmpPageFlow(authConnector, GMPSessionService, config, messagesControllerComponents, ac)
+    with Logging {
 
-  def newCalculation = authAction.async {
-    implicit request => {
-      logger.debug(s"[SessionCacheController][newCalculation][GET] : $request")
-      GMPSessionService.resetGmpSessionWithScon() map {
-        case Some(_) => Redirect(controllers.routes.PensionDetailsController.get)
-        case None => throw new RuntimeException
-      }
+  def newCalculation = authAction.async { implicit request =>
+    logger.debug(s"[SessionCacheController][newCalculation][GET] : $request")
+    GMPSessionService.resetGmpSessionWithScon() map {
+      case Some(_) => Redirect(controllers.routes.PensionDetailsController.get)
+      case None    => throw new RuntimeException
     }
   }
 
-  def newBulkCalculation = authAction.async {
-    implicit request => {
+  def newBulkCalculation = authAction.async { implicit request =>
+    logger.debug(s"[SessionCacheController][newBulkCalculation][GET] : $request")
 
-      logger.debug(s"[SessionCacheController][newBulkCalculation][GET] : $request")
-
-      GMPSessionService.resetGmpBulkSession() map {
-        case Some(_) => Redirect(controllers.routes.FileUploadController.get)
-        case None => throw new RuntimeException
-      }
+    GMPSessionService.resetGmpBulkSession() map {
+      case Some(_) => Redirect(controllers.routes.FileUploadController.get)
+      case None    => throw new RuntimeException
     }
   }
 }

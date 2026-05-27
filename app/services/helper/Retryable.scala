@@ -23,7 +23,7 @@ import scala.concurrent.{ExecutionContext, Future}
 trait Retryable extends Logging {
 
   def retry[T](noOfTimes: Int, context: String)(block: => Future[T])(implicit ec: ExecutionContext): Future[T] =
-    if (noOfTimes == 0) {
+    if noOfTimes == 0 then {
       Future.failed(new Exception(s"$context - [Retry limit met]"))
     } else {
       block recoverWith { case e =>

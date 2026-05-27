@@ -30,7 +30,7 @@ class NinoSpec extends AnyWordSpec with Matchers {
 
   "Formatting a Nino" should {
     "produce a formatted nino" in {
-      val nino = RandomNino.generate
+      val nino          = RandomNino.generate
       val formattedNino = nino.grouped(2).mkString(" ")
 
       Nino(nino).formatted shouldBe formattedNino

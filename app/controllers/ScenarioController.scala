@@ -31,70 +31,74 @@ import views.Views
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class ScenarioController @Inject()(authAction: AuthAction,
-                                   override val authConnector: AuthConnector,
-                                   ac:ApplicationConfig,
-                                   GMPSessionService: GMPSessionService,
-                                   implicit val config:GmpContext,
-                                   override val messagesControllerComponents: MessagesControllerComponents,
-                                   sf:ScenarioForm,
-                                   implicit val executionContext: ExecutionContext,
-                                   implicit val gmpSessionCache: GmpSessionCache,
-                                   views: Views
-                                  ) extends GmpPageFlow(authConnector,GMPSessionService,config,messagesControllerComponents,ac) with Logging {
+class ScenarioController @Inject() (
+  authAction:                                AuthAction,
+  override val authConnector:                AuthConnector,
+  ac:                                        ApplicationConfig,
+  GMPSessionService:                         GMPSessionService,
+  implicit val config:                       GmpContext,
+  override val messagesControllerComponents: MessagesControllerComponents,
+  sf:                                        ScenarioForm,
+  implicit val executionContext:             ExecutionContext,
+  implicit val gmpSessionCache:              GmpSessionCache,
+  views:                                     Views
+) extends GmpPageFlow(authConnector, GMPSessionService, config, messagesControllerComponents, ac)
+    with Logging {
 
   lazy val scenarioForm = sf.scenarioForm
 
-  def get = authAction.async {
-    implicit request => GMPSessionService.fetchGmpSession() map {
-      case Some(session) => session match {
-        case _ if session.scon == "" =>
-          Ok(views.failure(
-            Messages("gmp.error.session_parts_missing", "/guaranteed-minimum-pension/pension-details"),
+  def get = authAction.async { implicit request =>
+    GMPSessionService.fetchGmpSession() map {
+      case Some(session) =>
+        session match {
+          case _ if session.scon == "" =>
+            Ok(
+              views.failure(
+                Messages("gmp.error.session_parts_missing", "/guaranteed-minimum-pension/pension-details"),
+                Messages("gmp.cannot_calculate.gmp"),
+                Messages("gmp.session_missing.title")
+              )
+            )
+          case _ if session.memberDetails.nino == "" || session.memberDetails.firstForename == "" || session.memberDetails.surname == "" =>
+            Ok(
+              views.failure(
+                Messages("gmp.error.session_parts_missing", "/guaranteed-minimum-pension/member-details"),
+                Messages("gmp.cannot_calculate.gmp"),
+                Messages("gmp.session_missing.title")
+              )
+            )
+          case _ => Ok(views.scenario(scenarioForm.fill(CalculationType(Some(session.scenario)))))
+        }
+      case _ =>
+        Ok(
+          views.failure(
+            Messages("gmp.error.session_parts_missing", "/guaranteed-minimum-pension/dashboard"),
             Messages("gmp.cannot_calculate.gmp"),
             Messages("gmp.session_missing.title")
-          ))
-        case _ if session.memberDetails.nino == "" || session.memberDetails.firstForename == "" || session.memberDetails.surname == "" =>
-          Ok(views.failure(
-            Messages("gmp.error.session_parts_missing", "/guaranteed-minimum-pension/member-details"),
-            Messages("gmp.cannot_calculate.gmp"),
-            Messages("gmp.session_missing.title")
-          ))
-        case _ => Ok(views.scenario(scenarioForm.fill(CalculationType(Some(session.scenario)))))
-      }
-      case _ => Ok(views.failure(
-        Messages("gmp.error.session_parts_missing", "/guaranteed-minimum-pension/dashboard"),
-        Messages("gmp.cannot_calculate.gmp"),
-        Messages("gmp.session_missing.title")
-      ))
+          )
+        )
     }
   }
 
-  def post = authAction.async {
-    implicit request => {
+  def post = authAction.async { implicit request =>
+    logger.debug(s"[ScenarioController][post][POST] : ${request.body}")
 
-      logger.debug(s"[ScenarioController][post][POST] : ${request.body}")
-
-      scenarioForm.bindFromRequest().fold(
-        formWithErrors => {
-          Future.successful(BadRequest(views.scenario(formWithErrors)))
-        }, calculationType => {
+    scenarioForm
+      .bindFromRequest()
+      .fold(
+        formWithErrors => Future.successful(BadRequest(views.scenario(formWithErrors))),
+        calculationType =>
           GMPSessionService.cacheScenario(calculationType.calcType.get) map {
             case Some(session) => nextPage("ScenarioController", session)
-            case _ => throw new RuntimeException
+            case _             => throw new RuntimeException
           }
-        }
-
       )
-    }
   }
 
-  def back = authAction.async {
-    implicit request => {
-      GMPSessionService.fetchGmpSession() map {
-        case Some(session) => previousPage("ScenarioController", session)
-        case _ => throw new RuntimeException
-      }
+  def back = authAction.async { implicit request =>
+    GMPSessionService.fetchGmpSession() map {
+      case Some(session) => previousPage("ScenarioController", session)
+      case _             => throw new RuntimeException
     }
   }
 }

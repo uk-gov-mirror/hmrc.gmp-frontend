@@ -18,12 +18,12 @@ package connectors
 
 import com.google.inject.Inject
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito._
+import org.mockito.Mockito.*
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Mode
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import play.api.{Application, Configuration, Environment}
 import uk.gov.hmrc.http.{BadGatewayException, HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
@@ -31,8 +31,10 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import java.net.URL
 import scala.concurrent.Future
 
-class ContactFrontendConnectorSpec @Inject()(servicesConfig: ServicesConfig) extends HttpClientV2Helper
-  with GuiceOneAppPerSuite with BeforeAndAfterEach {
+class ContactFrontendConnectorSpec @Inject() (servicesConfig: ServicesConfig)
+    extends HttpClientV2Helper
+    with GuiceOneAppPerSuite
+    with BeforeAndAfterEach {
 
   implicit override lazy val app: Application = new GuiceApplicationBuilder()
     .configure(Map("Test.microservice.assets.url" -> "test-url", "Test.microservice.assets.version" -> "test-version"))
@@ -46,8 +48,8 @@ class ContactFrontendConnectorSpec @Inject()(servicesConfig: ServicesConfig) ext
 
   implicit val headerCarrier: HeaderCarrier = HeaderCarrier()
 
-  object TestConnector extends ContactFrontendConnector(mockHttp, app.injector.instanceOf[Environment],
-    runModeConfiguration, app.injector.instanceOf[ServicesConfig])
+  object TestConnector
+      extends ContactFrontendConnector(mockHttp, app.injector.instanceOf[Environment], runModeConfiguration, app.injector.instanceOf[ServicesConfig])
 
   override def beforeEach() = {
     reset(mockHttp, requestBuilder)
@@ -58,8 +60,8 @@ class ContactFrontendConnectorSpec @Inject()(servicesConfig: ServicesConfig) ext
   "ContactFrontendConnector" must {
 
     val dummyResponseHtml = "<div id=\"contact-partial\"></div>"
-    lazy val serviceBase = s"${servicesConfig.baseUrl("contact-frontend")}/contact"
-    lazy val serviceUrl = s"$serviceBase/problem_reports"
+    lazy val serviceBase  = s"${servicesConfig.baseUrl("contact-frontend")}/contact"
+    lazy val serviceUrl   = s"$serviceBase/problem_reports"
 
     "contact the front end service to download the 'get help' partial" in {
 

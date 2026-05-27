@@ -53,27 +53,26 @@ class DashboardSpec extends GmpViewSpec {
       doc must haveThWithText(messages("gmp.th.time_left"))
     }
 
-    "must have table with rows for each day" in {
+    "must have table with rows for each day" in
       bulkPreviousRequestsList.foreach { bpr =>
         doc must haveTdWithText(bpr.reference)
         doc must haveTdWithText(messages("gmp.days_left", 30, "s"))
       }
-    }
-
 
     "have a download template link" in {
       doc must haveLinkWithText(messages("gmp.download_templates_link"))
     }
   }
-  lazy val table = app.injector.instanceOf[GovukTable]
+  lazy val table  = app.injector.instanceOf[GovukTable]
   lazy val layout = app.injector.instanceOf[views.html.Layout]
   override def view: Html = new views.html.dashboard(layout, table)(bulkPreviousRequestsList)
 
-  private val bulkPreviousRequestsList: List[models.BulkPreviousRequest] = List(BulkPreviousRequest(uploadReference = "upload",
-    reference = "fake", timestamp = LocalDateTime.now, processedDateTime = LocalDateTime.now), BulkPreviousRequest(uploadReference = "upload",
-    reference = "fake", timestamp = LocalDateTime.now, processedDateTime = LocalDateTime.now), BulkPreviousRequest(uploadReference = "upload",
-    reference = "fake", timestamp = LocalDateTime.now, processedDateTime = LocalDateTime.now), BulkPreviousRequest(uploadReference = "upload",
-    reference = "fake", timestamp = LocalDateTime.now, processedDateTime = LocalDateTime.now))
+  private val bulkPreviousRequestsList: List[models.BulkPreviousRequest] = List(
+    BulkPreviousRequest(uploadReference = "upload", reference = "fake", timestamp = LocalDateTime.now, processedDateTime = LocalDateTime.now),
+    BulkPreviousRequest(uploadReference = "upload", reference = "fake", timestamp = LocalDateTime.now, processedDateTime = LocalDateTime.now),
+    BulkPreviousRequest(uploadReference = "upload", reference = "fake", timestamp = LocalDateTime.now, processedDateTime = LocalDateTime.now),
+    BulkPreviousRequest(uploadReference = "upload", reference = "fake", timestamp = LocalDateTime.now, processedDateTime = LocalDateTime.now)
+  )
 }
 
 class DashboardSpecNoPreviousCalculations extends GmpViewSpec {
@@ -85,7 +84,7 @@ class DashboardSpecNoPreviousCalculations extends GmpViewSpec {
       doc must haveParagraphWithText(messages("gmp.no_previous_calculations_text"))
     }
   }
-  lazy val table = app.injector.instanceOf[GovukTable]
+  lazy val table  = app.injector.instanceOf[GovukTable]
   lazy val layout = app.injector.instanceOf[views.html.Layout]
   override def view: Html = new views.html.dashboard(layout, table)(bulkPreviousRequestsList)
 

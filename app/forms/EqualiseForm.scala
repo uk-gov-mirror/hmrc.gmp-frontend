@@ -20,20 +20,18 @@ import com.google.inject.Singleton
 import javax.inject.Inject
 import models.Equalise
 import play.api.data.Form
-import play.api.data.Forms._
+import play.api.data.Forms.*
 import play.api.i18n.{Messages, MessagesImpl}
 import play.api.mvc.MessagesControllerComponents
 
 @Singleton
-class EqualiseForm  @Inject()(mcc: MessagesControllerComponents) {
+class EqualiseForm @Inject() (mcc: MessagesControllerComponents) {
   implicit lazy val messages: Messages = MessagesImpl(mcc.langs.availables.head, mcc.messagesApi)
-
 
   val equaliseForm = Form(
     mapping(
-      "equalise" -> optional(number).verifying(messages("gmp.error.equalise.error_message"), {_.isDefined})
-    )(Equalise.apply)((eq:Equalise) => Some(eq.equalise))
+      "equalise" -> optional(number).verifying(messages("gmp.error.equalise.error_message"), _.isDefined)
+    )(Equalise.apply)((eq: Equalise) => Some(eq.equalise))
   )
 
 }
-

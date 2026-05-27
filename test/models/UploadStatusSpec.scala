@@ -17,7 +17,7 @@
 package models
 
 import helpers.BaseSpec
-import models.upscan._
+import models.upscan.*
 import play.api.libs.json.{JsError, Json}
 
 class UploadStatusSpec extends BaseSpec {
@@ -36,8 +36,8 @@ class UploadStatusSpec extends BaseSpec {
     "return UploadedSuccessfully" when {
       "_type is UploadedSuccessfully" in {
         val expectedName = "fileName"
-        val expectedUrl = "downloadUrl"
-        val json = s"""{"_type": "UploadedSuccessfully","reference": "ref1", "fileName": "$expectedName", "downloadUrl": "$expectedUrl"}"""
+        val expectedUrl  = "downloadUrl"
+        val json         = s"""{"_type": "UploadedSuccessfully","reference": "ref1", "fileName": "$expectedName", "downloadUrl": "$expectedUrl"}"""
         val expectedResponse = UploadedSuccessfully("ref1", expectedName, expectedUrl, None)
         Json.parse(json).as[UploadStatus] shouldBe expectedResponse
       }
@@ -58,7 +58,7 @@ class UploadStatusSpec extends BaseSpec {
     "return JsonError" when {
       "_type is unexpected value" in {
         val unexpectedValue = "RandomValue"
-        val json = s"""{"_type": "$unexpectedValue"}"""
+        val json            = s"""{"_type": "$unexpectedValue"}"""
         Json.parse(json).validate[UploadStatus] shouldBe JsError(s"""Unexpected value of _type: "$unexpectedValue"""")
       }
 
@@ -82,8 +82,8 @@ class UploadStatusSpec extends BaseSpec {
     "set _type as UploadedSuccessfully with name, downloadUrl and noOfRows in json" when {
       "status is UploadedSuccessfully" in {
         val expectedName = "fileName"
-        val expectedUrl = "downloadUrl"
-        val noOfRows = 2
+        val expectedUrl  = "downloadUrl"
+        val noOfRows     = 2
         val expectedJson =
           s"""{"reference":"ref1","fileName":"$expectedName","downloadUrl":"$expectedUrl","noOfRows":$noOfRows,"_type":"UploadedSuccessfully"}"""
         val uploadStatus: UploadStatus = UploadedSuccessfully("ref1", expectedName, expectedUrl, Some(noOfRows))
@@ -100,6 +100,5 @@ class UploadStatusSpec extends BaseSpec {
       }
     }
   }
-
 
 }

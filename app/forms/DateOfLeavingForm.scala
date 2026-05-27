@@ -20,37 +20,35 @@ import com.google.inject.Singleton
 import forms.helper.Mappings
 import models.{GmpDate, Leaving}
 import play.api.data.Form
-import play.api.data.Forms._
+import play.api.data.Forms.*
 import play.api.i18n.{Messages, MessagesImpl}
 import play.api.mvc.MessagesControllerComponents
 
 import java.time.LocalDate
 import javax.inject.Inject
 
-
 @Singleton
-class DateOfLeavingForm @Inject()(mcc: MessagesControllerComponents) extends Mappings {
+class DateOfLeavingForm @Inject() (mcc: MessagesControllerComponents) extends Mappings {
   implicit lazy val messages: Messages = MessagesImpl(mcc.langs.availables.head, mcc.messagesApi)
 
   def dateCondition(data: Map[String, String]): Boolean = data.get("leaving").contains(Leaving.YES_AFTER)
 
-  def dateOfLeavingForm(minYear: Int = 2016, maxYear: Int = 2046) = {
-    Form(mapping(
-      "leavingDate" -> gmpDate(
-        maximumDateInclusive = Some(LocalDate.of(maxYear, 4, 5)),
-        minimumDateInclusive = Some(LocalDate.of(minYear, 4, 6)),
-        "leavingDate.day",
-        "leavingDate.month",
-        "leavingDate.year",
-        "leavingDate",
-        tooRecentArgs = Seq("5 April " + maxYear.toString),
-        tooFarInPastArgs = Seq("6 April " + minYear.toString),
-        onlyRequiredIf = Some(dateCondition)
-      ),
-      "leaving" -> optional(text).verifying("error.required", {
-        _.isDefined
-      }))(Leaving.apply)((le: Leaving) => Some(le.leavingDate, le.leaving)))
-  }
+  def dateOfLeavingForm(minYear: Int = 2016, maxYear: Int = 2046) =
+    Form(
+      mapping(
+        "leavingDate" -> gmpDate(
+          maximumDateInclusive = Some(LocalDate.of(maxYear, 4, 5)),
+          minimumDateInclusive = Some(LocalDate.of(minYear, 4, 6)),
+          "leavingDate.day",
+          "leavingDate.month",
+          "leavingDate.year",
+          "leavingDate",
+          tooRecentArgs = Seq("5 April " + maxYear.toString),
+          tooFarInPastArgs = Seq("6 April " + minYear.toString),
+          onlyRequiredIf = Some(dateCondition)
+        ),
+        "leaving" -> optional(text).verifying("error.required", _.isDefined)
+      )(Leaving.apply)((le: Leaving) => Some(le.leavingDate, le.leaving))
+    )
 
 }
-

@@ -20,8 +20,8 @@ import play.twirl.api.Html
 import uk.gov.hmrc.govukfrontend.views.html.components.GovukButton
 import utils.GmpViewSpec
 
-class ThankYouSpec extends GmpViewSpec{
-  lazy val layout = app.injector.instanceOf[views.html.Layout]
+class ThankYouSpec extends GmpViewSpec {
+  lazy val layout      = app.injector.instanceOf[views.html.Layout]
   lazy val govUkButton = app.injector.instanceOf[GovukButton]
 
   override def view: Html = new views.html.thank_you(layout, govUkButton)()

@@ -21,9 +21,9 @@ import play.api.libs.json.{Json, OFormat}
 case class RevaluationRate(rateType: Option[String])
 
 object RevaluationRate {
-  val HMRC = "hmrc"
-  val FIXED = "fixed"
-  val S148 = "s148"
+  val HMRC    = "hmrc"
+  val FIXED   = "fixed"
+  val S148    = "s148"
   val LIMITED = "limited"
 
   implicit val formats: OFormat[RevaluationRate] = Json.format[RevaluationRate]

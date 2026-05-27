@@ -23,18 +23,21 @@ import java.time.LocalDateTime
 import play.api.Mode
 import play.api.libs.json.Json
 import play.api.{Configuration, Environment, Logging}
-import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.*
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http.HttpReads.Implicits.*
 import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class GmpBulkConnector @Inject()(environment: Environment,
-                                 val runModeConfiguration: Configuration,
-                                 http: HttpClientV2,
-                                 servicesConfig: ServicesConfig)(implicit ec: ExecutionContext) extends Logging {
+class GmpBulkConnector @Inject() (
+  environment:              Environment,
+  val runModeConfiguration: Configuration,
+  http:                     HttpClientV2,
+  servicesConfig:           ServicesConfig
+)(implicit ec: ExecutionContext)
+    extends Logging {
 
   def mode: Mode = environment.mode
 
@@ -42,9 +45,10 @@ class GmpBulkConnector @Inject()(environment: Environment,
 
   def sendBulkRequest(bcr: BulkCalculationRequest, link: String)(implicit headerCarrier: HeaderCarrier): Future[Int] = {
 
-    val baseURI = s"gmp/${link}/gmp/bulk-data"
+    val baseURI = s"gmp/$link/gmp/bulk-data"
     val bulkUri = s"$serviceURL/$baseURI/"
-    val result = http.post(url"$bulkUri")
+    val result  = http
+      .post(url"$bulkUri")
       .withBody(Json.toJson(bcr.copy(timestamp = LocalDateTime.now(), userId = link)))
       .execute[HttpResponse]
 
@@ -52,7 +56,7 @@ class GmpBulkConnector @Inject()(environment: Environment,
 
     result.map { x =>
       logger.debug(s"[GmpBulkConnector][sendBulkRequest][success] : $x")
-        x.status
+      x.status
     } recover {
       case conflict: UpstreamErrorResponse if conflict.statusCode == play.api.http.Status.CONFLICT =>
         logger.warn(s"[GmpBulkConnector][sendBulkRequest] Conflict")
@@ -62,23 +66,25 @@ class GmpBulkConnector @Inject()(environment: Environment,
         logger.warn(s"[GmpBulkConnector][sendBulkRequest] File too large")
         large_file.statusCode
 
-      case e: Throwable => logger.error(s"[GmpBulkConnector][sendBulkRequest] ${e.getMessage}", e)
+      case e: Throwable =>
+        logger.error(s"[GmpBulkConnector][sendBulkRequest] ${e.getMessage}", e)
         play.api.http.Status.INTERNAL_SERVER_ERROR
     }
   }
 
   def getPreviousBulkRequests(link: String)(implicit headerCarrier: HeaderCarrier): Future[List[BulkPreviousRequest]] = {
 
-    val baseURI = s"gmp/${link}/gmp/retrieve-previous-requests"
+    val baseURI = s"gmp/$link/gmp/retrieve-previous-requests"
     val bulkUri = s"$serviceURL/$baseURI"
-    val result = http.get(url"$bulkUri")
+    val result  = http
+      .get(url"$bulkUri")
       .execute[List[BulkPreviousRequest]]
 
     logger.debug(s"[GmpBulkConnector][getPreviousBulkRequests][GET]")
 
     // $COVERAGE-OFF$
-    result onComplete {
-      case response => logger.debug(s"[GmpBulkConnector][getPreviousBulkRequests][response] : $response")
+    result onComplete { case response =>
+      logger.debug(s"[GmpBulkConnector][getPreviousBulkRequests][response] : $response")
     }
 
     result.failed.foreach {
@@ -93,17 +99,18 @@ class GmpBulkConnector @Inject()(environment: Environment,
 
   def getBulkResultsSummary(uploadReference: String, link: String)(implicit headerCarrier: HeaderCarrier): Future[BulkResultsSummary] = {
 
-    val baseURI = s"gmp/${link}/gmp/get-results-summary"
+    val baseURI = s"gmp/$link/gmp/get-results-summary"
     val bulkUri = s"$serviceURL/$baseURI/$uploadReference"
 
-    val result = http.get(url"$bulkUri")
+    val result = http
+      .get(url"$bulkUri")
       .execute[BulkResultsSummary]
 
     logger.debug(s"[GmpBulkConnector][getBulkResultsSummary][GET] reference : $uploadReference")
 
     // $COVERAGE-OFF$
-    result onComplete {
-      case response => logger.debug(s"[GmpBulkConnector][getBulkResultsSummary][response] : $response")
+    result onComplete { case response =>
+      logger.debug(s"[GmpBulkConnector][getBulkResultsSummary][response] : $response")
     }
 
     result.failed.foreach {
@@ -117,16 +124,17 @@ class GmpBulkConnector @Inject()(environment: Environment,
 
   def getResultsAsCsv(uploadReference: String, filter: String, link: String)(implicit headerCarrier: HeaderCarrier): Future[HttpResponse] = {
 
-    val baseURI = s"gmp/${link}/gmp/get-results-as-csv"
+    val baseURI = s"gmp/$link/gmp/get-results-as-csv"
     val bulkUri = s"$serviceURL/$baseURI/$uploadReference/$filter"
-    val result = http.get(url"$bulkUri")
+    val result  = http
+      .get(url"$bulkUri")
       .execute[HttpResponse]
 
     logger.debug(s"[GmpBulkConnector][getResultsAsCsv][GET] reference : $uploadReference")
 
     // $COVERAGE-OFF$
-    result onComplete {
-      case response => logger.debug(s"[GmpBulkConnector][getResultsAsCsv][response] : $response")
+    result onComplete { case response =>
+      logger.debug(s"[GmpBulkConnector][getResultsAsCsv][response] : $response")
     }
 
     result.failed.foreach {
@@ -135,23 +143,24 @@ class GmpBulkConnector @Inject()(environment: Environment,
     }
     // $COVERAGE-ON$
 
-    result.map {
-      response => response
+    result.map { response =>
+      response
     }
   }
 
   def getContributionsAndEarningsAsCsv(uploadReference: String, link: String)(implicit headerCarrier: HeaderCarrier): Future[HttpResponse] = {
 
-    val baseURI = s"gmp/${link}/gmp/get-contributions-as-csv"
+    val baseURI = s"gmp/$link/gmp/get-contributions-as-csv"
     val bulkUri = s"$serviceURL/$baseURI/$uploadReference"
-    val result = http.get(url"$bulkUri")
+    val result  = http
+      .get(url"$bulkUri")
       .execute[HttpResponse]
 
     logger.debug(s"[GmpBulkConnector][getContributionsAndEarningsAsCsv][GET] reference : $uploadReference")
 
     // $COVERAGE-OFF$
-    result onComplete {
-      case response => logger.debug(s"[GmpBulkConnector][getContributionsAndEarningsAsCsv][response] : $response")
+    result onComplete { case response =>
+      logger.debug(s"[GmpBulkConnector][getContributionsAndEarningsAsCsv][response] : $response")
     }
 
     result.failed.foreach {
@@ -160,8 +169,8 @@ class GmpBulkConnector @Inject()(environment: Environment,
     }
     // $COVERAGE-ON$
 
-    result.map {
-      response => response
+    result.map { response =>
+      response
     }
   }
 

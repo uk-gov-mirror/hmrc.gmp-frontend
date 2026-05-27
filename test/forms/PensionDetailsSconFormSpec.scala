@@ -25,11 +25,11 @@ import play.api.i18n.{Lang, MessagesApi, MessagesImpl}
 import play.api.libs.json.Json
 import play.api.mvc.MessagesControllerComponents
 
-class PensionDetailsSconFormSpec extends PlaySpec with GuiceOneAppPerSuite with MockitoSugar{
+class PensionDetailsSconFormSpec extends PlaySpec with GuiceOneAppPerSuite with MockitoSugar {
 
-  implicit lazy val messagesAPI: MessagesApi = app.injector.instanceOf[MessagesApi]
+  implicit lazy val messagesAPI:      MessagesApi  = app.injector.instanceOf[MessagesApi]
   implicit lazy val messagesProvider: MessagesImpl = MessagesImpl(Lang("en"), messagesAPI)
-  lazy val mcc = app.injector.instanceOf[MessagesControllerComponents]
+  lazy val mcc                = app.injector.instanceOf[MessagesControllerComponents]
   lazy val pensionDetailsForm = new PensionDetails_no_longer_used_Form(mcc).pensionDetailsForm
   val fromJsonMaxChars: Int = 102400
 
@@ -37,16 +37,16 @@ class PensionDetailsSconFormSpec extends PlaySpec with GuiceOneAppPerSuite with 
 
     "return no errors with valid scon" in {
 
-      val gmpRequest = Json.toJson(PensionDetailsScon("S1301234T"))
+      val gmpRequest           = Json.toJson(PensionDetailsScon("S1301234T"))
       val pensionDetailsResult = pensionDetailsForm.bind(gmpRequest, fromJsonMaxChars)
 
-      assert(!pensionDetailsResult.errors.contains(FormError("scon",List("error.invalid"))))
+      assert(!pensionDetailsResult.errors.contains(FormError("scon", List("error.invalid"))))
 
     }
 
     "return error when scon is empty" in {
 
-      val gmpRequest = Json.toJson(PensionDetailsScon(""))
+      val gmpRequest           = Json.toJson(PensionDetailsScon(""))
       val pensionDetailsResult = pensionDetailsForm.bind(gmpRequest, fromJsonMaxChars)
 
       assert(pensionDetailsResult.errors.contains(FormError("scon", List("error.required"))))
@@ -55,7 +55,7 @@ class PensionDetailsSconFormSpec extends PlaySpec with GuiceOneAppPerSuite with 
 
     "return error when scon is invalid" in {
 
-      val gmpRequest = Json.toJson(PensionDetailsScon("ABCD"))
+      val gmpRequest           = Json.toJson(PensionDetailsScon("ABCD"))
       val pensionDetailsResult = pensionDetailsForm.bind(gmpRequest, fromJsonMaxChars)
 
       assert(pensionDetailsResult.errors.contains(FormError("scon", List("error.invalid"))))

@@ -19,4 +19,5 @@ import com.google.inject.Inject
 import config.MyErrorHandler
 import play.api.Environment
 
-class AssetsController @Inject() (errorHandler: MyErrorHandler,metadata: AssetsMetadata, env: Environment) extends AssetsBuilder(errorHandler,metadata, env)
+class AssetsController @Inject() (errorHandler: MyErrorHandler, metadata: AssetsMetadata, env: Environment)
+    extends AssetsBuilder(errorHandler, metadata, env)

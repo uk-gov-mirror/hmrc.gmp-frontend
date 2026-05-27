@@ -27,10 +27,13 @@ import scala.concurrent.{ExecutionContext, Future}
 import uk.gov.hmrc.http.client.HttpClientV2
 
 @Singleton
-class ContactFrontendConnector @Inject()(http: HttpClientV2,
-                                         environment: Environment,
-                                         val runModeConfiguration: Configuration,
-                                         val servicesConfig: ServicesConfig)(implicit ec: ExecutionContext) extends Logging {
+class ContactFrontendConnector @Inject() (
+  http:                     HttpClientV2,
+  environment:              Environment,
+  val runModeConfiguration: Configuration,
+  val servicesConfig:       ServicesConfig
+)(implicit ec: ExecutionContext)
+    extends Logging {
 
   val mode: Mode = environment.mode
 
@@ -40,13 +43,13 @@ class ContactFrontendConnector @Inject()(http: HttpClientV2,
 
     val url = s"$serviceBase/problem_reports"
 
-    http.get(url"$url")
+    http
+      .get(url"$url")
       .execute[HttpResponse]
       .map(_.body)
-      .recover {
-        case e: BadGatewayException =>
-          logger.error(s"[ContactFrontendConnector] ${e.message}", e)
-          ""
+      .recover { case e: BadGatewayException =>
+        logger.error(s"[ContactFrontendConnector] ${e.message}", e)
+        ""
       }
   }
 }

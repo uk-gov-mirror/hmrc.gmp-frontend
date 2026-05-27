@@ -29,45 +29,43 @@ import views.Views
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class EqualiseController @Inject()(authAction: AuthAction,
-                                   override val authConnector: AuthConnector,
-                                   GMPSessionService: GMPSessionService,
-                                   implicit val config:GmpContext,ef:EqualiseForm,
-                                   messagesControllerComponents: MessagesControllerComponents,
-                                   ac:ApplicationConfig,
-                                   implicit val executionContext: ExecutionContext,
-                                   implicit val gmpSessionCache: GmpSessionCache,
-                                   views: Views)
-  extends GmpPageFlow(authConnector,GMPSessionService,config,messagesControllerComponents,ac) with Logging{
+class EqualiseController @Inject() (
+  authAction:                    AuthAction,
+  override val authConnector:    AuthConnector,
+  GMPSessionService:             GMPSessionService,
+  implicit val config:           GmpContext,
+  ef:                            EqualiseForm,
+  messagesControllerComponents:  MessagesControllerComponents,
+  ac:                            ApplicationConfig,
+  implicit val executionContext: ExecutionContext,
+  implicit val gmpSessionCache:  GmpSessionCache,
+  views:                         Views
+) extends GmpPageFlow(authConnector, GMPSessionService, config, messagesControllerComponents, ac)
+    with Logging {
 
   lazy val equaliseForm = ef.equaliseForm
-  def get = authAction.async {
-    implicit request => Future.successful(Ok(views.equalise(equaliseForm)))
+  def get               = authAction.async { implicit request =>
+    Future.successful(Ok(views.equalise(equaliseForm)))
   }
 
-  def post = authAction.async {
-    implicit request => {
-      logger.debug(s"[EqualiseController][POST] : ${request.body}")
-      equaliseForm.bindFromRequest().fold(
-        formWithErrors => {Future.successful(BadRequest(views.equalise(formWithErrors)))},
-
-        equalise => {
+  def post = authAction.async { implicit request =>
+    logger.debug(s"[EqualiseController][POST] : ${request.body}")
+    equaliseForm
+      .bindFromRequest()
+      .fold(
+        formWithErrors => Future.successful(BadRequest(views.equalise(formWithErrors))),
+        equalise =>
           GMPSessionService.cacheEqualise(equalise.equalise) map {
             case Some(session) => nextPage("EqualiseController", session)
-            case _ => throw new RuntimeException
+            case _             => throw new RuntimeException
           }
-        }
-
       )
-    }
   }
 
-  def back = authAction.async {
-    implicit request => {
-      GMPSessionService.fetchGmpSession() map {
-        case Some(session) => previousPage("EqualiseController", session)
-        case _ => throw new RuntimeException
-      }
+  def back = authAction.async { implicit request =>
+    GMPSessionService.fetchGmpSession() map {
+      case Some(session) => previousPage("EqualiseController", session)
+      case _             => throw new RuntimeException
     }
   }
 

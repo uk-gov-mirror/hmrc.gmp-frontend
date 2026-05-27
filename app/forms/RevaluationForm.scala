@@ -19,70 +19,65 @@ package forms
 import com.google.inject.{Inject, Singleton}
 import models.{GmpDate, GmpSession, Leaving, RevaluationDate}
 import play.api.data.Form
-import play.api.data.Forms._
+import play.api.data.Forms.*
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError, ValidationResult}
 import play.api.i18n.{Messages, MessagesImpl}
 import play.api.mvc.MessagesControllerComponents
 
 @Singleton
-class RevaluationForm @Inject()(mcc: MessagesControllerComponents) {
+class RevaluationForm @Inject() (mcc: MessagesControllerComponents) {
   implicit lazy val messages: Messages = MessagesImpl(mcc.langs.availables.head, mcc.messagesApi)
-
 
   val YEAR_FIELD_LENGTH: Int = 4
 
-  def mandatoryDate(date: GmpDate): Boolean = {
+  def mandatoryDate(date: GmpDate): Boolean =
     date.day.isDefined || date.month.isDefined || date.year.isDefined
-  }
 
-  def  revaluationDateConstraint(session: GmpSession): Constraint[RevaluationDate] = Constraint("revaluationDate")({
-    revaluationDate => {
-      val errors =
-        if (session.leaving.leaving.nonEmpty &&
-          session.leaving.leaving.contains(Leaving.NO) &&
-            !revaluationDate.revaluationDate.isOnOrAfter06042016)
-        {
-          Seq(ValidationError(messages("gmp.error.revaluation_pre2016_not_left"), "revaluationDate")) // 2016
-        }
-        else if (revaluationDate.revaluationDate.isBefore(session.leaving.leavingDate) &&
-          session.leaving.leaving.contains(Leaving.YES_AFTER)) {
-          Seq(ValidationError(Messages("gmp.error.revaluation_before_leaving", session.leaving.leavingDate.getAsText), "revaluationDate"))
-        }
-        else if (session.leaving.leaving.nonEmpty &&
+  def revaluationDateConstraint(session: GmpSession): Constraint[RevaluationDate] = Constraint("revaluationDate") { revaluationDate =>
+    val errors =
+      if session.leaving.leaving.nonEmpty &&
+        session.leaving.leaving.contains(Leaving.NO) &&
+        !revaluationDate.revaluationDate.isOnOrAfter06042016
+      then {
+        Seq(ValidationError(messages("gmp.error.revaluation_pre2016_not_left"), "revaluationDate")) // 2016
+      } else if revaluationDate.revaluationDate.isBefore(session.leaving.leavingDate) &&
+        session.leaving.leaving.contains(Leaving.YES_AFTER)
+      then {
+        Seq(ValidationError(Messages("gmp.error.revaluation_before_leaving", session.leaving.leavingDate.getAsText), "revaluationDate"))
+      } else if session.leaving.leaving.nonEmpty &&
         session.leaving.leaving.contains(Leaving.YES_BEFORE) &&
-        !revaluationDate.revaluationDate.isOnOrAfter05041978){
-          Seq(ValidationError(Messages("gmp.error.reval_date.from"), "revaluationDate"))
-        }
-        else {
-          Nil
-        }
-
-      if (errors.isEmpty) {
-        Valid
+        !revaluationDate.revaluationDate.isOnOrAfter05041978
+      then {
+        Seq(ValidationError(Messages("gmp.error.reval_date.from"), "revaluationDate"))
       } else {
-        Invalid(errors)
+        Nil
       }
+
+    if errors.isEmpty then {
+      Valid
+    } else {
+      Invalid(errors)
     }
-  })
+  }
 
   private val allDateValuesEntered: GmpDate => ValidationResult = {
     case GmpDate(None, None, None) => invalid("date.emptyfields")
-    case GmpDate(None, None, _) => invalid("daymonth.missing")
-    case GmpDate(_, None, None) => invalid("monthyear.missing")
-    case GmpDate(None, _, None) => invalid("dayyear.missing")
-    case GmpDate(None, _, _) => invalid("day.missing")
-    case GmpDate(_, None, _) => invalid("month.missing")
-    case GmpDate(_, _, None) => invalid("year.missing")
-    case _ => Valid
+    case GmpDate(None, None, _)    => invalid("daymonth.missing")
+    case GmpDate(_, None, None)    => invalid("monthyear.missing")
+    case GmpDate(None, _, None)    => invalid("dayyear.missing")
+    case GmpDate(None, _, _)       => invalid("day.missing")
+    case GmpDate(_, None, _)       => invalid("month.missing")
+    case GmpDate(_, _, None)       => invalid("year.missing")
+    case _                         => Valid
   }
 
   private val dateIsReal: GmpDate => ValidationResult = {
-    case d:GmpDate if(checkValidDate(d))=> Valid
+    case d: GmpDate if checkValidDate(d) => Valid
     case _ => invalid("gmp.error.date.invalid")
   }
 
   private val checkDateOnBefore: GmpDate => ValidationResult = {
-    case d: GmpDate if(checkDateOnOBeforeGMPEnd(d)) => Valid
+    case d: GmpDate if checkDateOnOBeforeGMPEnd(d) => Valid
     case _ => invalid("gmp.error.reval_date.to")
   }
 
@@ -99,30 +94,28 @@ class RevaluationForm @Inject()(mcc: MessagesControllerComponents) {
   private def messageKeyForError(error: String) = s"reval-date.error.$error"
 
   lazy val revaluationDateMapping = mapping(
-      "day" -> optional(text),
-      "month" -> optional(text),
-      "year" -> optional(text)
-    )(GmpDate.apply)((gmpDate: GmpDate ) => Some(gmpDate.day, gmpDate.month, gmpDate.year))
+    "day"   -> optional(text),
+    "month" -> optional(text),
+    "year"  -> optional(text)
+  )(GmpDate.apply)((gmpDate: GmpDate) => Some(gmpDate.day, gmpDate.month, gmpDate.year))
     .verifying(Constraint(allDateValuesEntered))
-      .verifying(Constraint(dateIsReal))
-      .verifying(Constraint(checkDateOnBefore))
+    .verifying(Constraint(dateIsReal))
+    .verifying(Constraint(checkDateOnBefore))
 
   val leavingMapping = mapping(
     "leavingDate" -> mapping(
-      "day" -> optional(text),
-
+      "day"   -> optional(text),
       "month" -> optional(text),
-      "year" -> optional(text)
+      "year"  -> optional(text)
     )(GmpDate.apply)((gd: GmpDate) => Some(gd.day, gd.month, gd.year)),
     "leaving" -> optional(text)
   )(Leaving.apply)((lv: Leaving) => Some(lv.leavingDate, lv.leaving))
 
   def revaluationForm(session: GmpSession) = Form(
     mapping(
-      "leaving" -> leavingMapping,
+      "leaving"         -> leavingMapping,
       "revaluationDate" -> revaluationDateMapping
     )(RevaluationDate.apply)((rd: RevaluationDate) => Some(rd.leaving, rd.revaluationDate))
       .verifying(revaluationDateConstraint(session))
   )
 }
-

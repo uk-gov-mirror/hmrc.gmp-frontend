@@ -24,19 +24,20 @@ import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 @Singleton
-class GmpSessionCache @Inject()(@Named("appName") appName: String,
-                                environment: Environment,
-                                configuration: Configuration,
-                                val httpClientV2: HttpClientV2,
-                               val serviceConfig: ServicesConfig)  extends SessionCache{
+class GmpSessionCache @Inject() (
+  @Named("appName") appName: String,
+  environment:               Environment,
+  configuration:             Configuration,
+  val httpClientV2:          HttpClientV2,
+  val serviceConfig:         ServicesConfig
+) extends SessionCache {
 
+  val defaultSource = appName
+  val baseUri       = serviceConfig.baseUrl("keystore")
+  val domain        =
+    serviceConfig.getConfString("cachable.session-cache.domain", throw new Exception(s"Could not find config 'cachable.session-cache.domain'"))
 
-
-   val defaultSource = appName
-   val baseUri = serviceConfig.baseUrl("keystore")
-   val domain = serviceConfig.getConfString("cachable.session-cache.domain", throw new Exception(s"Could not find config 'cachable.session-cache.domain'"))
-
-   def appNameConfiguration: Configuration = configuration
-   def mode: Mode = environment.mode
-   def runModeConfiguration: Configuration = configuration
+  def appNameConfiguration: Configuration = configuration
+  def mode:                 Mode          = environment.mode
+  def runModeConfiguration: Configuration = configuration
 }

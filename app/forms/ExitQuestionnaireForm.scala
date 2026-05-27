@@ -18,19 +18,20 @@ package forms
 
 import models.ExitQuestionnaire
 import play.api.data.Form
-import play.api.data.Forms._
-
+import play.api.data.Forms.*
 
 object ExitQuestionnaireForm {
   val MAX_COMMENT_LENGTH: Int = 1200
   val exitQuestionnaireForm = Form(
     mapping(
       "serviceDifficulty" -> optional(text),
-      "serviceFeel" -> optional(text),
-      "comments" -> optional(text(maxLength = MAX_COMMENT_LENGTH)),
-      "fullName" -> optional(text),
-      "email" -> optional(text),
-      "phoneNumber" -> optional(text)
-    )(ExitQuestionnaire.apply)(((eq: ExitQuestionnaire) => Some(eq.serviceDifficulty, eq.serviceFeel, eq.comments, eq.fullName, eq.email, eq.phoneNumber)))
+      "serviceFeel"       -> optional(text),
+      "comments"          -> optional(text(maxLength = MAX_COMMENT_LENGTH)),
+      "fullName"          -> optional(text),
+      "email"             -> optional(text),
+      "phoneNumber"       -> optional(text)
+    )(ExitQuestionnaire.apply)((eq: ExitQuestionnaire) =>
+      Some(eq.serviceDifficulty, eq.serviceFeel, eq.comments, eq.fullName, eq.email, eq.phoneNumber)
+    )
   )
 }

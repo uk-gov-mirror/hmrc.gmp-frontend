@@ -22,12 +22,11 @@ import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import play.api.mvc.MessagesControllerComponents
 
-class EqualiseFormSpec extends PlaySpec with GuiceOneAppPerSuite{
+class EqualiseFormSpec extends PlaySpec with GuiceOneAppPerSuite {
 
-  lazy val mcc = app.injector.instanceOf[MessagesControllerComponents]
+  lazy val mcc          = app.injector.instanceOf[MessagesControllerComponents]
   lazy val equaliseForm = new EqualiseForm(mcc).equaliseForm
   val fromJsonMaxChars: Int = 102400
-
 
   "Equalise Form" must {
 

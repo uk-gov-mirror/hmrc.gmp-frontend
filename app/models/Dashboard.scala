@@ -18,7 +18,7 @@ package models
 
 import play.api.libs.json.{Json, OFormat}
 
-case class Dashboard (recentBulkCalculations: List[BulkPreviousRequest])
+case class Dashboard(recentBulkCalculations: List[BulkPreviousRequest])
 
 object Dashboard {
   implicit val formats: OFormat[Dashboard] = Json.format[Dashboard]

@@ -29,57 +29,53 @@ import services.GMPSessionService
 
 import scala.concurrent.ExecutionContext
 
-class BulkResultsController @Inject()(authAction: AuthAction,
-                                      val authConnector: AuthConnector,
-                                      gmpBulkConnector: GmpBulkConnector,
-                                      messagesControllerComponents: MessagesControllerComponents,
-                                      ac:ApplicationConfig,GMPSessionService: GMPSessionService,implicit val config:GmpContext,
-                                      implicit val executionContext: ExecutionContext,
-                                      views: Views
-                                     ) extends GmpController(messagesControllerComponents,ac, GMPSessionService,config) with Logging {
-   def get(uploadReference: String, comingFromPage: Int) = authAction.async {
-    implicit request => {
-      val log = (e: Throwable) => logger.error(s"[BulkResultsController][GET] ${e.getMessage}", e)
-      val link = request.linkId
+class BulkResultsController @Inject() (
+  authAction:                    AuthAction,
+  val authConnector:             AuthConnector,
+  gmpBulkConnector:              GmpBulkConnector,
+  messagesControllerComponents:  MessagesControllerComponents,
+  ac:                            ApplicationConfig,
+  GMPSessionService:             GMPSessionService,
+  implicit val config:           GmpContext,
+  implicit val executionContext: ExecutionContext,
+  views:                         Views
+) extends GmpController(messagesControllerComponents, ac, GMPSessionService, config)
+    with Logging {
+  def get(uploadReference: String, comingFromPage: Int) = authAction.async { implicit request =>
+    val log  = (e: Throwable) => logger.error(s"[BulkResultsController][GET] ${e.getMessage}", e)
+    val link = request.linkId
 
-        gmpBulkConnector.getBulkResultsSummary(uploadReference, link).map {
-          bulkResultsSummary => {
-            Ok(views.bulkResults(bulkResultsSummary, uploadReference, comingFromPage))
-          }
-        }.recover {
-          case e: UpstreamErrorResponse if e.statusCode == FORBIDDEN => {
-            log(e)
-            Ok(views.bulkWrongUser())
-          }
-          case e: UpstreamErrorResponse if e.statusCode == NOT_FOUND => {
-            log(e)
-            Ok(views.bulkResultsNotFound())
-          }
-          // $COVERAGE-OFF$
-          case e: Exception => {
-            log(e)
-            throw e
-          }
-          // $COVERAGE-ON$
-        }
+    gmpBulkConnector
+      .getBulkResultsSummary(uploadReference, link)
+      .map { bulkResultsSummary =>
+        Ok(views.bulkResults(bulkResultsSummary, uploadReference, comingFromPage))
+      }
+      .recover {
+        case e: UpstreamErrorResponse if e.statusCode == FORBIDDEN =>
+          log(e)
+          Ok(views.bulkWrongUser())
+        case e: UpstreamErrorResponse if e.statusCode == NOT_FOUND =>
+          log(e)
+          Ok(views.bulkResultsNotFound())
+        // $COVERAGE-OFF$
+        case e: Exception =>
+          log(e)
+          throw e
+        // $COVERAGE-ON$
       }
   }
 
-    def getResultsAsCsv(uploadReference: String, filter: String) = authAction.async {
-        implicit request => {
-          val link = request.linkId
-          gmpBulkConnector.getResultsAsCsv(uploadReference, filter, link).map {
-            csvResponse => Ok(csvResponse.body).as("text/csv").withHeaders(("Content-Disposition", csvResponse.header("Content-Disposition").getOrElse("")))
-          }
-        }
+  def getResultsAsCsv(uploadReference: String, filter: String) = authAction.async { implicit request =>
+    val link = request.linkId
+    gmpBulkConnector.getResultsAsCsv(uploadReference, filter, link).map { csvResponse =>
+      Ok(csvResponse.body).as("text/csv").withHeaders(("Content-Disposition", csvResponse.header("Content-Disposition").getOrElse("")))
     }
+  }
 
-    def getContributionsAndEarningsAsCsv(uploadReference: String) = authAction.async {
-        implicit request => {
-          val link = request.linkId
-          gmpBulkConnector.getContributionsAndEarningsAsCsv(uploadReference, link).map {
-            csvResponse => Ok(csvResponse.body).as("text/csv").withHeaders(("Content-Disposition", csvResponse.header("Content-Disposition").getOrElse("")))
-          }
-        }
+  def getContributionsAndEarningsAsCsv(uploadReference: String) = authAction.async { implicit request =>
+    val link = request.linkId
+    gmpBulkConnector.getContributionsAndEarningsAsCsv(uploadReference, link).map { csvResponse =>
+      Ok(csvResponse.body).as("text/csv").withHeaders(("Content-Disposition", csvResponse.header("Content-Disposition").getOrElse("")))
     }
+  }
 }

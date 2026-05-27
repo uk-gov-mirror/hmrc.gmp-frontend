@@ -32,7 +32,6 @@ object PensionDetailsScon {
       "scon" -> text
         .verifying(Messages("gmp.error.mandatory.new"), x => x.nonEmpty)
         .verifying(Messages("gmp.error.scon.invalid"), x => x.isEmpty || SconValidate.isValid(x))
-
     )(PensionDetailsScon.apply)((pd: PensionDetailsScon) => Some(pd.scon))
   )
 }

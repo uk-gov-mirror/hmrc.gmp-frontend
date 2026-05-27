@@ -17,4 +17,3 @@
 package models
 
 case class BackLinkParams(href: String, label: Option[String] = None)
-

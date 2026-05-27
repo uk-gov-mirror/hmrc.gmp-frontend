@@ -20,22 +20,22 @@ import models.Equalise
 import play.api.data.Form
 import play.api.data.Forms.{mapping, number, optional}
 import play.twirl.api.Html
-import uk.gov.hmrc.govukfrontend.views.html.components._
+import uk.gov.hmrc.govukfrontend.views.html.components.*
 import utils.GmpViewSpec
 import views.ViewHelpers
 
 class EqualiseSpec extends GmpViewSpec {
-  lazy val layout = app.injector.instanceOf[views.html.Layout]
-  lazy val viewHelpers = app.injector.instanceOf[ViewHelpers]
-  lazy val govukRadios = app.injector.instanceOf[GovukRadios]
-  lazy val govukButton = app.injector.instanceOf[GovukButton]
+  lazy val layout            = app.injector.instanceOf[views.html.Layout]
+  lazy val viewHelpers       = app.injector.instanceOf[ViewHelpers]
+  lazy val govukRadios       = app.injector.instanceOf[GovukRadios]
+  lazy val govukButton       = app.injector.instanceOf[GovukButton]
   lazy val govukErrorSummary = app.injector.instanceOf[GovukErrorSummary]
 
   override def view: Html = new views.html.equalise(layout, viewHelpers, govukRadios, govukButton, govukErrorSummary)(equaliseForm)
 
   val equaliseForm = Form(
     mapping(
-      "equalise" -> optional(number).verifying(messages("gmp.error.equalise.error_message"), {_.isDefined})
+      "equalise" -> optional(number).verifying(messages("gmp.error.equalise.error_message"), _.isDefined)
     )(Equalise.apply)((eq: Equalise) => Some(eq.equalise))
   )
   "Equalise page" must {

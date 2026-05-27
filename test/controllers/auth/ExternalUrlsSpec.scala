@@ -19,7 +19,6 @@ package controllers.auth
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 
-
 class ExternalUrlsSpec extends PlaySpec with GuiceOneServerPerSuite {
 
   lazy val externalUrls = app.injector.instanceOf[ExternalUrls]
@@ -42,7 +41,9 @@ class ExternalUrlsSpec extends PlaySpec with GuiceOneServerPerSuite {
     }
 
     "have signIn " in {
-      externalUrls.signIn must be(s"""http://localhost:9553/bas-gateway/sign-in?continue_url=http://localhost:9941/guaranteed-minimum-pension/dashboard""")
+      externalUrls.signIn must be(
+        s"""http://localhost:9553/bas-gateway/sign-in?continue_url=http://localhost:9941/guaranteed-minimum-pension/dashboard"""
+      )
     }
 
     "have signoutPath" in {
@@ -53,5 +54,5 @@ class ExternalUrlsSpec extends PlaySpec with GuiceOneServerPerSuite {
       externalUrls.signOut must be(s"""http://localhost:9553/bas-gateway/sign-out-without-state?continue=http://localhost:9514/feedback/GMP""")
     }
   }
-  
+
 }

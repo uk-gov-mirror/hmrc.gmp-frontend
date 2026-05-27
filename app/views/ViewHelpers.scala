@@ -16,26 +16,26 @@
 
 package views
 
-import uk.gov.hmrc.govukfrontend.views.html.components._
+import uk.gov.hmrc.govukfrontend.views.html.components.*
 import uk.gov.hmrc.hmrcfrontend.views.html.components.HmrcHeader
 import uk.gov.hmrc.hmrcfrontend.views.html.helpers.{HmrcHead, HmrcTrackingConsentSnippet}
 
 import javax.inject.Inject
 
-class ViewHelpers @Inject()(
-                                val hmrcTrackingConsentSnippet: HmrcTrackingConsentSnippet,
-                                val hmrcHeader:                 HmrcHeader,
-                                val hmrcHead:                  HmrcHead,
-                                val govukButton:                GovukButton,
-                                val govukErrorSummary:          GovukErrorSummary,
-                                val govUkRadios:                GovukRadios,
-                                val govukDateInput:             GovukDateInput,
-                                val govukInput:                 GovukInput,
-                                val govukFileUpload:            GovukFileUpload,
-                                val govUkDetails:               GovukDetails,
-                                val govukWarningText:           GovukWarningText,
-                                val govukPanel:                 GovukPanel,
-                                val form:                       FormWithCSRF,
-                                val govukErrorMessage:          GovukErrorMessage,
-                                val govukBackLink:              GovukBackLink
-                              )
+class ViewHelpers @Inject() (
+  val hmrcTrackingConsentSnippet: HmrcTrackingConsentSnippet,
+  val hmrcHeader:                 HmrcHeader,
+  val hmrcHead:                   HmrcHead,
+  val govukButton:                GovukButton,
+  val govukErrorSummary:          GovukErrorSummary,
+  val govUkRadios:                GovukRadios,
+  val govukDateInput:             GovukDateInput,
+  val govukInput:                 GovukInput,
+  val govukFileUpload:            GovukFileUpload,
+  val govUkDetails:               GovukDetails,
+  val govukWarningText:           GovukWarningText,
+  val govukPanel:                 GovukPanel,
+  val form:                       FormWithCSRF,
+  val govukErrorMessage:          GovukErrorMessage,
+  val govukBackLink:              GovukBackLink
+)

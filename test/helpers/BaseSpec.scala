@@ -20,6 +20,4 @@ import org.scalatest.OptionValues
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 
-class BaseSpec extends AnyWordSpecLike with Matchers with OptionValues{
-
-}
+class BaseSpec extends AnyWordSpecLike with Matchers with OptionValues {}

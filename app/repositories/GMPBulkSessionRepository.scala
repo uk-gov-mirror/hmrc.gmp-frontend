@@ -17,7 +17,7 @@
 package repositories
 
 import org.mongodb.scala.bson.conversions.Bson
-import org.mongodb.scala.model._
+import org.mongodb.scala.model.*
 import play.api.libs.json.Format
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
@@ -33,23 +33,23 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class GMPBulkSessionRepository @Inject() (
-                                           mongoComponent: MongoComponent,
-                                           appConfig: ApplicationConfig,
-                                           implicit val encryption: Encryption
-                                         )(implicit ec: ExecutionContext)
-  extends PlayMongoRepository[GMPBulkSessionCache](
-    collectionName = "gmp-bulk-session",
-    mongoComponent = mongoComponent,
-    domainFormat = GMPBulkSessionCache.MongoFormats.formats,
-    indexes = Seq(
-      IndexModel(
-        Indexes.ascending("lastModifiedIdx"),
-        IndexOptions()
-          .name("lastModifiedIdx")
-          .expireAfter(appConfig.cacheTtl.toLong, TimeUnit.SECONDS)
+  mongoComponent:          MongoComponent,
+  appConfig:               ApplicationConfig,
+  implicit val encryption: Encryption
+)(implicit ec: ExecutionContext)
+    extends PlayMongoRepository[GMPBulkSessionCache](
+      collectionName = "gmp-bulk-session",
+      mongoComponent = mongoComponent,
+      domainFormat = GMPBulkSessionCache.MongoFormats.formats,
+      indexes = Seq(
+        IndexModel(
+          Indexes.ascending("lastModifiedIdx"),
+          IndexOptions()
+            .name("lastModifiedIdx")
+            .expireAfter(appConfig.cacheTtl.toLong, TimeUnit.SECONDS)
+        )
       )
-    )
-  ){
+    ) {
   implicit val instantFormat: Format[Instant] = MongoJavatimeFormats.instantFormat
 
   private def byId(id: String): Bson = Filters.equal("_id", id)
@@ -63,16 +63,15 @@ class GMPBulkSessionRepository @Inject() (
       .toFuture()
       .map(_ => true)
 
-  def get(id: String): Future[Option[GMPBulkSessionCache]] = {
+  def get(id: String): Future[Option[GMPBulkSessionCache]] =
     for {
-      _ <- keepAlive(id)
+      _              <- keepAlive(id)
       optUserAnswers <- collection.find(byId(id)).headOption()
     } yield optUserAnswers
-  }
 
   def set(answers: GMPBulkSessionCache): Future[Boolean] = {
 
-    val updatedAnswers = answers.copy (lastModified = Instant.now())
+    val updatedAnswers = answers.copy(lastModified = Instant.now())
 
     collection
       .replaceOne(

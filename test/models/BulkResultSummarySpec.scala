@@ -25,15 +25,15 @@ class BulkResultSummarySpec extends AnyWordSpec with Matchers {
   "BulkResultsSummary Json formats " should {
     "serialise BulkResultSummary to Json" in {
       val bulkResultSummary = BulkResultsSummary("example", 3, 1)
-      val json = Json.toJson(bulkResultSummary)
+      val json              = Json.toJson(bulkResultSummary)
       (json \ "reference").as[String] shouldBe "example"
-      (json \ "total").as[Int] shouldBe 3
-      (json \ "failed").as[Int] shouldBe 1
+      (json \ "total").as[Int]        shouldBe 3
+      (json \ "failed").as[Int]       shouldBe 1
 
     }
 
     "deserialise Json to BulkResultSummary" in {
-      val json = Json.obj("reference" -> "example", "total" -> 3, "failed" -> 1)
+      val json               = Json.obj("reference" -> "example", "total" -> 3, "failed" -> 1)
       val bulkResultsSummary = json.as[BulkResultsSummary]
       bulkResultsSummary shouldBe BulkResultsSummary("example", 3, 1)
     }

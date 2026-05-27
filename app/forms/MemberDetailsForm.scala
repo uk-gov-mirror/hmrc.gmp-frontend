@@ -19,42 +19,36 @@ package forms
 import com.google.inject.{Inject, Singleton}
 import models.MemberDetails
 import play.api.data.Form
-import play.api.data.Forms._
+import play.api.data.Forms.*
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.i18n.{Messages, MessagesImpl}
 import play.api.mvc.MessagesControllerComponents
 import validation.NinoValidate
 
 @Singleton
-class MemberDetailsForm @Inject()(mcc: MessagesControllerComponents) {
+class MemberDetailsForm @Inject() (mcc: MessagesControllerComponents) {
   implicit lazy val messages: Messages = MessagesImpl(mcc.langs.availables.head, mcc.messagesApi)
 
-
-  val MAX_LENGTH = 99
-  val NAME_REGEX = "^[a-zA-Z][a-zA-z\\s|'|-]*$"
+  val MAX_LENGTH        = 99
+  val NAME_REGEX        = "^[a-zA-Z][a-zA-z\\s|'|-]*$"
   val NINO_SUFFIX_REGEX = "[A-D]"
-  val TEMP_NINO = "TN"
+  val TEMP_NINO         = "TN"
 
-  val ninoConstraint : Constraint[String] = Constraint("constraints.nino") ({
-    text =>
-      val ninoText = text.replaceAll("\\s", "")
-      if (ninoText.length == 0){
-        Invalid(Seq(ValidationError(messages("gmp.error.member.nino.mandatory"))))
-      }
-      else if (ninoText.toUpperCase().startsWith(TEMP_NINO)){
-        Invalid(Seq(ValidationError(messages("gmp.error.nino.temporary"))))
-      }
-      else if (!NinoValidate.isValid(ninoText.toUpperCase())){
-        Invalid(Seq(ValidationError(messages("gmp.error.nino.invalid"))))
-      }
-      else if (!ninoText.takeRight(1).toUpperCase().matches(NINO_SUFFIX_REGEX)){
-        Invalid(Seq(ValidationError(messages("gmp.error.nino.invalid"))))
-      }
-      else {
-        Valid
-      }
+  val ninoConstraint: Constraint[String] = Constraint("constraints.nino") { text =>
+    val ninoText = text.replaceAll("\\s", "")
+    if ninoText.length == 0 then {
+      Invalid(Seq(ValidationError(messages("gmp.error.member.nino.mandatory"))))
+    } else if ninoText.toUpperCase().startsWith(TEMP_NINO) then {
+      Invalid(Seq(ValidationError(messages("gmp.error.nino.temporary"))))
+    } else if !NinoValidate.isValid(ninoText.toUpperCase()) then {
+      Invalid(Seq(ValidationError(messages("gmp.error.nino.invalid"))))
+    } else if !ninoText.takeRight(1).toUpperCase().matches(NINO_SUFFIX_REGEX) then {
+      Invalid(Seq(ValidationError(messages("gmp.error.nino.invalid"))))
+    } else {
+      Valid
+    }
 
-  })
+  }
 
   def form() = Form(
     mapping(
@@ -67,8 +61,8 @@ class MemberDetailsForm @Inject()(mcc: MessagesControllerComponents) {
         .verifying(messages("gmp.error.length", messages("gmp.lowercase.lastname"), MAX_LENGTH), x => x.length <= MAX_LENGTH)
         .verifying(messages("gmp.error.name.invalid", messages("gmp.lowercase.lastname")), x => x.length == 0 || x.matches(NAME_REGEX)),
       "nino" -> text
-        .verifying(ninoConstraint))
-    (MemberDetails.apply)((md: MemberDetails) => Some(md.firstForename, md.surname, md.nino))
+        .verifying(ninoConstraint)
+    )(MemberDetails.apply)((md: MemberDetails) => Some(md.firstForename, md.surname, md.nino))
   )
 
 }

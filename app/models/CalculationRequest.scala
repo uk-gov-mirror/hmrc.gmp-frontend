@@ -19,14 +19,18 @@ package models
 import java.time.LocalDate
 import play.api.libs.json.{Json, OFormat}
 
-case class CalculationRequest(scon: String, nino: String, surname: String, firstForename: String,
-                              calctype: Int,
-                              revaluationDate: Option[LocalDate] = None,
-                              revaluationRate: Option[Int] = None,
-                              requestEarnings: Option[Int] = None,
-                              dualCalc: Option[Int] = None,
-                              terminationDate: Option[LocalDate] = None ) {
-}
+case class CalculationRequest(
+  scon:            String,
+  nino:            String,
+  surname:         String,
+  firstForename:   String,
+  calctype:        Int,
+  revaluationDate: Option[LocalDate] = None,
+  revaluationRate: Option[Int] = None,
+  requestEarnings: Option[Int] = None,
+  dualCalc:        Option[Int] = None,
+  terminationDate: Option[LocalDate] = None
+) {}
 
 object CalculationRequest {
   implicit val formats: OFormat[CalculationRequest] = Json.format[CalculationRequest]

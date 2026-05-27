@@ -26,9 +26,9 @@ import play.api.mvc.MessagesControllerComponents
 
 class MemberDetailsFormSpec extends PlaySpec with GuiceOneAppPerSuite {
 
-  implicit lazy val messagesAPI: MessagesApi = app.injector.instanceOf[MessagesApi]
+  implicit lazy val messagesAPI:      MessagesApi  = app.injector.instanceOf[MessagesApi]
   implicit lazy val messagesProvider: MessagesImpl = MessagesImpl(Lang("en"), messagesAPI)
-  lazy val mcc = app.injector.instanceOf[MessagesControllerComponents]
+  lazy val mcc  = app.injector.instanceOf[MessagesControllerComponents]
   lazy val form = new MemberDetailsForm(mcc).form()
   val fromJsonMaxChars: Int = 102400
   val MAX_LENGTH = 99
@@ -38,9 +38,9 @@ class MemberDetailsFormSpec extends PlaySpec with GuiceOneAppPerSuite {
     "return no errors with valid data" in {
 
       val postData = Json.obj(
-        "nino" -> RandomNino.generate,
+        "nino"          -> RandomNino.generate,
         "firstForename" -> "Bob",
-        "surname" -> "Jones"
+        "surname"       -> "Jones"
       )
       val validatedForm = form.bind(postData, fromJsonMaxChars)
 
@@ -52,9 +52,9 @@ class MemberDetailsFormSpec extends PlaySpec with GuiceOneAppPerSuite {
       "return an error when empty" in {
 
         val postData = Json.obj(
-          "nino" -> "",
+          "nino"          -> "",
           "firstForename" -> "Bob",
-          "surname" -> "Jones"
+          "surname"       -> "Jones"
         )
         val validatedForm = form.bind(postData, fromJsonMaxChars)
 
@@ -64,9 +64,9 @@ class MemberDetailsFormSpec extends PlaySpec with GuiceOneAppPerSuite {
       "return an error when invalid" in {
 
         val postData = Json.obj(
-          "nino" -> "QQ322312B", // Invalid NINO
+          "nino"          -> "QQ322312B", // Invalid NINO
           "firstForename" -> "Bob",
-          "surname" -> "Jones"
+          "surname"       -> "Jones"
         )
         val validatedForm = form.bind(postData, fromJsonMaxChars)
 
@@ -76,11 +76,11 @@ class MemberDetailsFormSpec extends PlaySpec with GuiceOneAppPerSuite {
 
       "return an error when invalid suffix" in {
 
-        val nino = s"${RandomNino.generate.substring(0,8)}Z"
+        val nino     = s"${RandomNino.generate.substring(0, 8)}Z"
         val postData = Json.obj(
-          "nino" -> nino,
+          "nino"          -> nino,
           "firstForename" -> "Bob",
-          "surname" -> "Jones"
+          "surname"       -> "Jones"
         )
         val validatedForm = form.bind(postData, fromJsonMaxChars)
 
@@ -91,9 +91,9 @@ class MemberDetailsFormSpec extends PlaySpec with GuiceOneAppPerSuite {
       "return an error when missing suffix" in {
 
         val postData = Json.obj(
-          "nino" -> RandomNino.generate.substring(0,8),
+          "nino"          -> RandomNino.generate.substring(0, 8),
           "firstForename" -> "Bob",
-          "surname" -> "Jones"
+          "surname"       -> "Jones"
         )
         val validatedForm = form.bind(postData, fromJsonMaxChars)
 
@@ -104,9 +104,9 @@ class MemberDetailsFormSpec extends PlaySpec with GuiceOneAppPerSuite {
       "return no errors when non capitals in nino" in {
 
         val postData = Json.obj(
-          "nino" -> RandomNino.generate.toLowerCase,
+          "nino"          -> RandomNino.generate.toLowerCase,
           "firstForename" -> "Bob",
-          "surname" -> "Jones"
+          "surname"       -> "Jones"
         )
         val validatedForm = form.bind(postData, fromJsonMaxChars)
 
@@ -116,9 +116,9 @@ class MemberDetailsFormSpec extends PlaySpec with GuiceOneAppPerSuite {
       "return an error when temporary nino" in {
 
         val postData = Json.obj(
-          "nino" -> "TN000001A", //Invalid NINO
+          "nino"          -> "TN000001A", // Invalid NINO
           "firstForename" -> "Bob",
-          "surname" -> "Jones"
+          "surname"       -> "Jones"
         )
         val validatedForm = form.bind(postData, fromJsonMaxChars)
 
@@ -130,9 +130,9 @@ class MemberDetailsFormSpec extends PlaySpec with GuiceOneAppPerSuite {
         val nino = RandomNino.generate.grouped(2).mkString(" ")
 
         val postData = Json.obj(
-          "nino" -> nino,
+          "nino"          -> nino,
           "firstForename" -> "Bob",
-          "surname" -> "Jones"
+          "surname"       -> "Jones"
         )
         val validatedForm = form.bind(postData, fromJsonMaxChars)
 
@@ -144,9 +144,9 @@ class MemberDetailsFormSpec extends PlaySpec with GuiceOneAppPerSuite {
         val nino = RandomNino.generate.reverse.grouped(2).mkString(" ").reverse
 
         val postData = Json.obj(
-          "nino" -> nino,
+          "nino"          -> nino,
           "firstForename" -> "Bob",
-          "surname" -> "Jones"
+          "surname"       -> "Jones"
         )
         val validatedForm = form.bind(postData, fromJsonMaxChars)
 
@@ -155,9 +155,9 @@ class MemberDetailsFormSpec extends PlaySpec with GuiceOneAppPerSuite {
 
       "return error when 13 character nino" in {
         val postData = Json.obj(
-          "nino" -> "AA000000001BB", //Invalid NINO
+          "nino"          -> "AA000000001BB", // Invalid NINO
           "firstForename" -> "Bob",
-          "surname" -> "Jones"
+          "surname"       -> "Jones"
         )
         val validatedForm = form.bind(postData, fromJsonMaxChars)
 
@@ -167,9 +167,9 @@ class MemberDetailsFormSpec extends PlaySpec with GuiceOneAppPerSuite {
 
       "return error when 12 character nino" in {
         val postData = Json.obj(
-          "nino" -> "AA000000001B", //Invalid NINO
+          "nino"          -> "AA000000001B", // Invalid NINO
           "firstForename" -> "Bob",
-          "surname" -> "Jones"
+          "surname"       -> "Jones"
         )
         val validatedForm = form.bind(postData, fromJsonMaxChars)
 
@@ -183,9 +183,9 @@ class MemberDetailsFormSpec extends PlaySpec with GuiceOneAppPerSuite {
       "return one error when empty" in {
 
         val postData = Json.obj(
-          "nino" -> RandomNino.generate,
+          "nino"          -> RandomNino.generate,
           "firstForename" -> "",
-          "surname" -> "Jones"
+          "surname"       -> "Jones"
         )
         val validatedForm = form.bind(postData, fromJsonMaxChars)
         assert(validatedForm.errors.contains(FormError("firstForename", List(Messages("gmp.error.firstnameorinitial")))))
@@ -195,9 +195,9 @@ class MemberDetailsFormSpec extends PlaySpec with GuiceOneAppPerSuite {
       "return no errors with length of MAX_LENGTH" in {
 
         val postData = Json.obj(
-          "nino" -> RandomNino.generate,
+          "nino"          -> RandomNino.generate,
           "firstForename" -> "a" * MAX_LENGTH,
-          "surname" -> "Jones"
+          "surname"       -> "Jones"
         )
         val validatedForm = form.bind(postData, fromJsonMaxChars)
 
@@ -207,31 +207,37 @@ class MemberDetailsFormSpec extends PlaySpec with GuiceOneAppPerSuite {
       "return an error when too long" in {
 
         val postData = Json.obj(
-          "nino" -> RandomNino.generate,
+          "nino"          -> RandomNino.generate,
           "firstForename" -> "a" * (MAX_LENGTH + 1),
-          "surname" -> "Jones"
+          "surname"       -> "Jones"
         )
         val validatedForm = form.bind(postData, fromJsonMaxChars)
 
-        assert(validatedForm.errors.contains(FormError("firstForename", List(Messages("gmp.error.length", Messages("gmp.lowercase.firstname"), MAX_LENGTH)))))
+        assert(
+          validatedForm.errors.contains(
+            FormError("firstForename", List(Messages("gmp.error.length", Messages("gmp.lowercase.firstname"), MAX_LENGTH)))
+          )
+        )
       }
 
       "return an error when contains a digit" in {
         val postData = Json.obj(
-          "nino" -> RandomNino.generate,
+          "nino"          -> RandomNino.generate,
           "firstForename" -> "Bob2",
-          "surname" -> "aaaa"
+          "surname"       -> "aaaa"
         )
         val validatedForm = form.bind(postData, fromJsonMaxChars)
 
-        assert(validatedForm.errors.contains(FormError("firstForename", List(Messages("gmp.error.name.invalid", Messages("gmp.lowercase.firstname"))))))
+        assert(
+          validatedForm.errors.contains(FormError("firstForename", List(Messages("gmp.error.name.invalid", Messages("gmp.lowercase.firstname")))))
+        )
       }
 
       "allow apostrophes" in {
         val postData = Json.obj(
-          "nino" -> RandomNino.generate,
+          "nino"          -> RandomNino.generate,
           "firstForename" -> "Bo'ob",
-          "surname" -> "aaaa"
+          "surname"       -> "aaaa"
         )
         val validatedForm = form.bind(postData, fromJsonMaxChars)
 
@@ -240,20 +246,22 @@ class MemberDetailsFormSpec extends PlaySpec with GuiceOneAppPerSuite {
 
       "disallow apostrophes as the first character" in {
         val postData = Json.obj(
-          "nino" -> RandomNino.generate,
+          "nino"          -> RandomNino.generate,
           "firstForename" -> "'Bob",
-          "surname" -> "aaaa"
+          "surname"       -> "aaaa"
         )
         val validatedForm = form.bind(postData, fromJsonMaxChars)
 
-        assert(validatedForm.errors.contains(FormError("firstForename", List(Messages("gmp.error.name.invalid", Messages("gmp.lowercase.firstname"))))))
+        assert(
+          validatedForm.errors.contains(FormError("firstForename", List(Messages("gmp.error.name.invalid", Messages("gmp.lowercase.firstname")))))
+        )
       }
 
       "allow hyphens" in {
         val postData = Json.obj(
-          "nino" -> RandomNino.generate,
+          "nino"          -> RandomNino.generate,
           "firstForename" -> "Bo-ob",
-          "surname" -> "aaaa"
+          "surname"       -> "aaaa"
         )
         val validatedForm = form.bind(postData, fromJsonMaxChars)
 
@@ -262,39 +270,45 @@ class MemberDetailsFormSpec extends PlaySpec with GuiceOneAppPerSuite {
 
       "disallow hyphens as the first character" in {
         val postData = Json.obj(
-          "nino" -> RandomNino.generate,
+          "nino"          -> RandomNino.generate,
           "firstForename" -> "-Bob",
-          "surname" -> "aaaa"
+          "surname"       -> "aaaa"
         )
         val validatedForm = form.bind(postData, fromJsonMaxChars)
 
-        assert(validatedForm.errors.contains(FormError("firstForename", List(Messages("gmp.error.name.invalid", Messages("gmp.lowercase.firstname"))))))
+        assert(
+          validatedForm.errors.contains(FormError("firstForename", List(Messages("gmp.error.name.invalid", Messages("gmp.lowercase.firstname")))))
+        )
       }
 
       "disallow other special characters" in {
         val postData1 = Json.obj(
-          "nino" -> RandomNino.generate,
+          "nino"          -> RandomNino.generate,
           "firstForename" -> "Bo$ob",
-          "surname" -> "aaaa"
+          "surname"       -> "aaaa"
         )
         val validatedForm1 = form.bind(postData1, fromJsonMaxChars)
 
         val postData2 = Json.obj(
-          "nino" -> RandomNino.generate,
+          "nino"          -> RandomNino.generate,
           "firstForename" -> "Bo@ob",
-          "surname" -> "aaaa"
+          "surname"       -> "aaaa"
         )
         val validatedForm2 = form.bind(postData2, fromJsonMaxChars)
 
-        assert(validatedForm1.errors.contains(FormError("firstForename", List(Messages("gmp.error.name.invalid", Messages("gmp.lowercase.firstname"))))))
-        assert(validatedForm2.errors.contains(FormError("firstForename", List(Messages("gmp.error.name.invalid", Messages("gmp.lowercase.firstname"))))))
+        assert(
+          validatedForm1.errors.contains(FormError("firstForename", List(Messages("gmp.error.name.invalid", Messages("gmp.lowercase.firstname")))))
+        )
+        assert(
+          validatedForm2.errors.contains(FormError("firstForename", List(Messages("gmp.error.name.invalid", Messages("gmp.lowercase.firstname")))))
+        )
       }
 
       "allow whitespace" in {
         val postData = Json.obj(
-          "nino" -> RandomNino.generate,
+          "nino"          -> RandomNino.generate,
           "firstForename" -> "Bobby Rae",
-          "surname" -> "'aaaa"
+          "surname"       -> "'aaaa"
         )
         val validatedForm = form.bind(postData, fromJsonMaxChars)
 
@@ -308,9 +322,9 @@ class MemberDetailsFormSpec extends PlaySpec with GuiceOneAppPerSuite {
     "return one error when empty" in {
 
       val postData = Json.obj(
-        "nino" -> RandomNino.generate,
+        "nino"          -> RandomNino.generate,
         "firstForename" -> "Bob",
-        "surname" -> ""
+        "surname"       -> ""
       )
       val validatedForm = form.bind(postData, fromJsonMaxChars)
 
@@ -321,22 +335,21 @@ class MemberDetailsFormSpec extends PlaySpec with GuiceOneAppPerSuite {
     "return no errors with length of MAX_LENGTH" in {
 
       val postData = Json.obj(
-        "nino" -> RandomNino.generate,
+        "nino"          -> RandomNino.generate,
         "firstForename" -> "Bob",
-        "surname" -> "a" * MAX_LENGTH
+        "surname"       -> "a" * MAX_LENGTH
       )
       val validatedForm = form.bind(postData, fromJsonMaxChars)
 
       assert(validatedForm.errors.isEmpty)
     }
 
-
     "return an error when too long" in {
 
       val postData = Json.obj(
-        "nino" -> RandomNino.generate,
+        "nino"          -> RandomNino.generate,
         "firstForename" -> "Bob",
-        "surname" -> "a" * (MAX_LENGTH + 1)
+        "surname"       -> "a" * (MAX_LENGTH + 1)
       )
       val validatedForm = form.bind(postData, fromJsonMaxChars)
 
@@ -345,9 +358,9 @@ class MemberDetailsFormSpec extends PlaySpec with GuiceOneAppPerSuite {
 
     "return an error when contains a digit" in {
       val postData = Json.obj(
-        "nino" -> RandomNino.generate,
+        "nino"          -> RandomNino.generate,
         "firstForename" -> "Bob",
-        "surname" -> "a2"
+        "surname"       -> "a2"
       )
       val validatedForm = form.bind(postData, fromJsonMaxChars)
 
@@ -356,9 +369,9 @@ class MemberDetailsFormSpec extends PlaySpec with GuiceOneAppPerSuite {
 
     "allow apostrophes" in {
       val postData = Json.obj(
-        "nino" -> RandomNino.generate,
+        "nino"          -> RandomNino.generate,
         "firstForename" -> "Boob",
-        "surname" -> "a'aaa"
+        "surname"       -> "a'aaa"
       )
       val validatedForm = form.bind(postData, fromJsonMaxChars)
 
@@ -367,9 +380,9 @@ class MemberDetailsFormSpec extends PlaySpec with GuiceOneAppPerSuite {
 
     "disallow apostrophes as the first character" in {
       val postData = Json.obj(
-        "nino" -> RandomNino.generate,
+        "nino"          -> RandomNino.generate,
         "firstForename" -> "Bob",
-        "surname" -> "'aaaa"
+        "surname"       -> "'aaaa"
       )
       val validatedForm = form.bind(postData, fromJsonMaxChars)
 
@@ -378,9 +391,9 @@ class MemberDetailsFormSpec extends PlaySpec with GuiceOneAppPerSuite {
 
     "allow hyphens" in {
       val postData = Json.obj(
-        "nino" -> RandomNino.generate,
+        "nino"          -> RandomNino.generate,
         "firstForename" -> "Bob",
-        "surname" -> "aa-aa"
+        "surname"       -> "aa-aa"
       )
       val validatedForm = form.bind(postData, fromJsonMaxChars)
 
@@ -389,9 +402,9 @@ class MemberDetailsFormSpec extends PlaySpec with GuiceOneAppPerSuite {
 
     "disallow hyphens as the first character" in {
       val postData = Json.obj(
-        "nino" -> RandomNino.generate,
+        "nino"          -> RandomNino.generate,
         "firstForename" -> "Bob",
-        "surname" -> "-aaaa"
+        "surname"       -> "-aaaa"
       )
       val validatedForm = form.bind(postData, fromJsonMaxChars)
 
@@ -400,9 +413,9 @@ class MemberDetailsFormSpec extends PlaySpec with GuiceOneAppPerSuite {
 
     "allow whitespace" in {
       val postData = Json.obj(
-        "nino" -> RandomNino.generate,
+        "nino"          -> RandomNino.generate,
         "firstForename" -> "Bob",
-        "surname" -> "aaaa aaaaa"
+        "surname"       -> "aaaa aaaaa"
       )
       val validatedForm = form.bind(postData, fromJsonMaxChars)
 
@@ -411,16 +424,16 @@ class MemberDetailsFormSpec extends PlaySpec with GuiceOneAppPerSuite {
 
     "disallow other special characters" in {
       val postData1 = Json.obj(
-        "nino" -> RandomNino.generate,
+        "nino"          -> RandomNino.generate,
         "firstForename" -> "Boob",
-        "surname" -> "aaa~a"
+        "surname"       -> "aaa~a"
       )
       val validatedForm1 = form.bind(postData1, fromJsonMaxChars)
 
       val postData2 = Json.obj(
-        "nino" -> RandomNino.generate,
+        "nino"          -> RandomNino.generate,
         "firstForename" -> "Bob",
-        "surname" -> "a$aaa"
+        "surname"       -> "a$aaa"
       )
       val validatedForm2 = form.bind(postData2, fromJsonMaxChars)
 

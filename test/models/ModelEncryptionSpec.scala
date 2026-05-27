@@ -34,12 +34,11 @@ class ModelEncryptionSpec extends PlaySpec with GuiceOneServerPerSuite {
   }
 
   val memberDetails: MemberDetails = MemberDetails("John", "Doe", RandomNino.generate)
-  val leaving: Leaving = Leaving(currentDateGmp, Some(Leaving.YES_BEFORE))
-  val scon = "S123456789T"
+  val leaving:       Leaving       = Leaving(currentDateGmp, Some(Leaving.YES_BEFORE))
+  val scon     = "S123456789T"
   val scenario = "Scenario 1"
-  val rate = "4.5%"
+  val rate     = "4.5%"
   val equalise = 1
-
 
   val gmpSession: GmpSession = GmpSession(
     memberDetails = memberDetails,
@@ -57,10 +56,10 @@ class ModelEncryptionSpec extends PlaySpec with GuiceOneServerPerSuite {
     lastModified = Instant.ofEpochSecond(1)
   )
 
-  val id: String = "id"
+  val id:           String       = "id"
   val callBackData: UploadStatus = UploadedSuccessfully("testReference", "testFileName", "testUrl")
-  val emailAddress: String = "testData"
-  val reference: String = "testData"
+  val emailAddress: String       = "testData"
+  val reference:    String       = "testData"
 
   val gmpBulkSession: GmpBulkSession = GmpBulkSession(
     callBackData = Some(callBackData),
@@ -79,7 +78,9 @@ class ModelEncryptionSpec extends PlaySpec with GuiceOneServerPerSuite {
       val result = ModelEncryption.encryptSingleCalculationSessionCache(singleCalculationSessionCache)
 
       result._1 mustBe singleCalculationSessionCache.id
-      Json.parse(encryption.crypto.decrypt(result._2, singleCalculationSessionCache.id)).as[GmpSession] mustBe singleCalculationSessionCache.gmpSession
+      Json
+        .parse(encryption.crypto.decrypt(result._2, singleCalculationSessionCache.id))
+        .as[GmpSession] mustBe singleCalculationSessionCache.gmpSession
       result._3 mustBe singleCalculationSessionCache.lastModified
     }
 
@@ -93,8 +94,6 @@ class ModelEncryptionSpec extends PlaySpec with GuiceOneServerPerSuite {
       result mustBe singleCalculationSessionCache
     }
   }
-
-
 
   "GmpBulkSessionCacheEncryption" should {
 
