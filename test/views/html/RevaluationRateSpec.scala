@@ -17,38 +17,50 @@
 package views.html
 
 import forms.RevaluationRateForm
-import models._
+import models.*
 import play.api.mvc.MessagesControllerComponents
 import play.twirl.api.Html
-import uk.gov.hmrc.govukfrontend.views.html.components._
+import uk.gov.hmrc.govukfrontend.views.html.components.*
 import utils.GmpViewSpec
 import views.ViewHelpers
 
 abstract class RevaluationRateSpec extends GmpViewSpec {
-  lazy val layout = app.injector.instanceOf[views.html.Layout]
-  lazy val viewHelpers = app.injector.instanceOf[ViewHelpers]
-  lazy val govukButton = app.injector.instanceOf[GovukButton]
-  lazy val govukRadios = app.injector.instanceOf[GovukRadios]
+  lazy val layout            = app.injector.instanceOf[views.html.Layout]
+  lazy val viewHelpers       = app.injector.instanceOf[ViewHelpers]
+  lazy val govukButton       = app.injector.instanceOf[GovukButton]
+  lazy val govukRadios       = app.injector.instanceOf[GovukRadios]
   lazy val govukErrorSummary = app.injector.instanceOf[GovukErrorSummary]
-  lazy val backLink = app.injector.instanceOf[GovukBackLink]
+  lazy val backLink          = app.injector.instanceOf[GovukBackLink]
 
-  override def view: Html = new views.html.revaluation_rate(layout, viewHelpers, govukRadios, govukButton, govukErrorSummary, backLink)(revaluationRateForm, session)
+  override def view: Html =
+    new views.html.revaluation_rate(layout, viewHelpers, govukRadios, govukButton, govukErrorSummary, backLink)(revaluationRateForm, session)
 
   lazy val mcc = app.injector.instanceOf[MessagesControllerComponents]
 
   lazy val revaluationRateForm = new RevaluationRateForm(mcc).revaluationRateForm
 
-
-   val session: GmpSession = GmpSession(MemberDetails("nino", "firstname", "surname"), "scon", "scenario",
-    Some(GmpDate(Some("day"), Some("month"), Some("year"))), Some("rate"),
-    Leaving(GmpDate(Some("day"), Some("month"), Some("year")), Some("leaving")), Some(1))
+  val session: GmpSession = GmpSession(
+    MemberDetails("nino", "firstname", "surname"),
+    "scon",
+    "scenario",
+    Some(GmpDate(Some("day"), Some("month"), Some("year"))),
+    Some("rate"),
+    Leaving(GmpDate(Some("day"), Some("month"), Some("year")), Some("leaving")),
+    Some(1)
+  )
 
 }
 
 class RevaluationRatePaySpaSurSpec extends RevaluationRateSpec {
-  override val session: GmpSession = GmpSession(MemberDetails("nino", "firstname", "surname"), "scon", CalculationType.SPA,
-    Some(GmpDate(Some("day"), Some("month"), Some("year"))), Some("rate"),
-    Leaving(GmpDate(Some("day"), Some("month"), Some("year")), Some(Leaving.YES_AFTER)), Some(1))
+  override val session: GmpSession = GmpSession(
+    MemberDetails("nino", "firstname", "surname"),
+    "scon",
+    CalculationType.SPA,
+    Some(GmpDate(Some("day"), Some("month"), Some("year"))),
+    Some("rate"),
+    Leaving(GmpDate(Some("day"), Some("month"), Some("year")), Some(Leaving.YES_AFTER)),
+    Some(1)
+  )
 
   "RevaluationRateRatePaySpaSur page" must {
     behave like pageWithTitle(messages("gmp.revaluation_rate.header"))
@@ -69,9 +81,15 @@ class RevaluationRatePaySpaSurSpec extends RevaluationRateSpec {
 }
 
 class RevaluationRateRevaSpec extends RevaluationRateSpec {
-  override val session: GmpSession = GmpSession(MemberDetails("nino", "firstname", "surname"), "scon", CalculationType.REVALUATION,
-    Some(GmpDate(Some("12"), Some("12"), Some("2010"))), Some("rate"),
-    Leaving(GmpDate(Some("12"), Some("12"), Some("2010")), Some("")), Some(1))
+  override val session: GmpSession = GmpSession(
+    MemberDetails("nino", "firstname", "surname"),
+    "scon",
+    CalculationType.REVALUATION,
+    Some(GmpDate(Some("12"), Some("12"), Some("2010"))),
+    Some("rate"),
+    Leaving(GmpDate(Some("12"), Some("12"), Some("2010")), Some("")),
+    Some(1)
+  )
 
   "RevaluationRateReva page" must {
     behave like pageWithHeader(messages("gmp.revaluation_rate.header"))

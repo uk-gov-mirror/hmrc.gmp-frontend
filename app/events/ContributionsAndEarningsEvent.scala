@@ -19,8 +19,10 @@ package events
 import uk.gov.hmrc.http.HeaderCarrier
 
 class ContributionsAndEarningsEvent(userId: String, nino: String)(implicit hc: HeaderCarrier)
-  extends GmpBusinessEvent("GMP-Contributions-Earnings",
-    Map(
-      "userId" -> userId,
-      "nino" -> nino
-    ))
+    extends GmpBusinessEvent(
+      "GMP-Contributions-Earnings",
+      Map(
+        "userId" -> userId,
+        "nino"   -> nino
+      )
+    )

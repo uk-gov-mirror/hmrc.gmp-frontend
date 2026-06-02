@@ -19,7 +19,7 @@ package repositories
 import config.ApplicationConfig
 import models.SingleCalculationSessionCache
 import org.mongodb.scala.bson.conversions.Bson
-import org.mongodb.scala.model._
+import org.mongodb.scala.model.*
 import play.api.libs.json.Format
 import services.Encryption
 import uk.gov.hmrc.mongo.MongoComponent
@@ -31,24 +31,24 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class SingleCalculationSessionRepository @Inject()(
-                                                mongoComponent: MongoComponent,
-                                                appConfig: ApplicationConfig,
-                                                clock: Clock
-                                              )(implicit ec: ExecutionContext, encryption: Encryption)
-  extends PlayMongoRepository[SingleCalculationSessionCache](
-    collectionName = "single-calculation-session-cache",
-    mongoComponent = mongoComponent,
-    domainFormat = SingleCalculationSessionCache.MongoFormats.formats,
-    indexes = Seq(
-      IndexModel(
-        Indexes.ascending("lastModified"),
-        IndexOptions()
-          .name("lastModifiedIdx")
-          .expireAfter(appConfig.cacheTtl.toLong, TimeUnit.SECONDS)
+class SingleCalculationSessionRepository @Inject() (
+  mongoComponent: MongoComponent,
+  appConfig:      ApplicationConfig,
+  clock:          Clock
+)(implicit ec: ExecutionContext, encryption: Encryption)
+    extends PlayMongoRepository[SingleCalculationSessionCache](
+      collectionName = "single-calculation-session-cache",
+      mongoComponent = mongoComponent,
+      domainFormat = SingleCalculationSessionCache.MongoFormats.formats,
+      indexes = Seq(
+        IndexModel(
+          Indexes.ascending("lastModified"),
+          IndexOptions()
+            .name("lastModifiedIdx")
+            .expireAfter(appConfig.cacheTtl.toLong, TimeUnit.SECONDS)
+        )
       )
-    )
-  ) {
+    ) {
   implicit val instantFormat: Format[Instant] = MongoJavatimeFormats.instantFormat
 
   private def byId(id: String): Bson = Filters.equal("_id", id)
@@ -62,16 +62,15 @@ class SingleCalculationSessionRepository @Inject()(
       .toFuture()
       .map(_ => true)
 
-  def get(id: String): Future[Option[SingleCalculationSessionCache]] = {
+  def get(id: String): Future[Option[SingleCalculationSessionCache]] =
     for {
-      _ <- keepAlive(id)
+      _              <- keepAlive(id)
       optUserAnswers <- collection.find(byId(id)).headOption()
     } yield optUserAnswers
-  }
 
   def set(answers: SingleCalculationSessionCache): Future[Boolean] = {
 
-    val updatedAnswers = answers.copy (lastModified = Instant.now(clock))
+    val updatedAnswers = answers.copy(lastModified = Instant.now(clock))
 
     collection
       .replaceOne(
@@ -90,5 +89,3 @@ class SingleCalculationSessionRepository @Inject()(
       .map(_ => true)
 
 }
-
-

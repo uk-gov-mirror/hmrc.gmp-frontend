@@ -31,38 +31,37 @@ import views.Views
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class InflationProofController @Inject()( authAction: AuthAction,
-                                          override val authConnector: AuthConnector,
-                                          GMPSessionService: GMPSessionService,
-                                          implicit val config:GmpContext,
-                                          override val messagesControllerComponents: MessagesControllerComponents,
-                                          ipf:InflationProofForm,
-                                          ac:ApplicationConfig,
-                                          implicit val executionContext: ExecutionContext,
-                                          implicit val gmpSessionCache: GmpSessionCache,
-                                          views: Views
-                                        ) extends GmpPageFlow(authConnector,GMPSessionService,config,messagesControllerComponents,ac) with Logging{
+class InflationProofController @Inject() (
+  authAction:                                AuthAction,
+  override val authConnector:                AuthConnector,
+  GMPSessionService:                         GMPSessionService,
+  implicit val config:                       GmpContext,
+  override val messagesControllerComponents: MessagesControllerComponents,
+  ipf:                                       InflationProofForm,
+  ac:                                        ApplicationConfig,
+  implicit val executionContext:             ExecutionContext,
+  implicit val gmpSessionCache:              GmpSessionCache,
+  views:                                     Views
+) extends GmpPageFlow(authConnector, GMPSessionService, config, messagesControllerComponents, ac)
+    with Logging {
 
-  lazy val inflationProofForm: Form[InflationProof] = ipf.inflationProofForm(1978,2046)
+  lazy val inflationProofForm: Form[InflationProof] = ipf.inflationProofForm(1978, 2046)
 
-  def get = authAction.async {
-    implicit request => {
-      Future.successful(Ok(views.inflationProof(inflationProofForm)))
-    }
+  def get = authAction.async { implicit request =>
+    Future.successful(Ok(views.inflationProof(inflationProofForm)))
   }
 
-  def post = authAction.async {
-    implicit request => {
-      logger.debug(s"[InflationProofController][POST] : ${request.body}")
+  def post = authAction.async { implicit request =>
+    logger.debug(s"[InflationProofController][POST] : ${request.body}")
 
-      inflationProofForm.bindFromRequest().fold(
-        formWithErrors => {
-          Future.successful(BadRequest(views.inflationProof(formWithErrors)))
-        },
+    inflationProofForm
+      .bindFromRequest()
+      .fold(
+        formWithErrors => Future.successful(BadRequest(views.inflationProof(formWithErrors))),
         revaluation => {
           val dateToStore = revaluation.revaluate match {
             case Some("Yes") => Some(revaluation.revaluationDate)
-            case _ => None
+            case _           => None
           }
           GMPSessionService.cacheRevaluationDate(dateToStore).map {
             case Some(session) => nextPage("InflationProofController", session)
@@ -72,15 +71,12 @@ class InflationProofController @Inject()( authAction: AuthAction,
           }
         }
       )
-    }
   }
 
-  def back = authAction.async {
-    implicit request => {
-      GMPSessionService.fetchGmpSession() map {
-        case Some(session) => previousPage("InflationProofController", session)
-        case _ => throw new RuntimeException
-      }
+  def back = authAction.async { implicit request =>
+    GMPSessionService.fetchGmpSession() map {
+      case Some(session) => previousPage("InflationProofController", session)
+      case _             => throw new RuntimeException
     }
   }
 

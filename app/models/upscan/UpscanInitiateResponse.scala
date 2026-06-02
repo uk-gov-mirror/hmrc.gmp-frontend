@@ -19,16 +19,16 @@ package models.upscan
 import play.api.libs.json.{Format, JsString, Json, Reads, Writes}
 
 case class UpscanInitiateResponse(
-                                   fileReference: Reference,
-                                   postTarget: String,
-                                   formFields: Map[String, String]
-                                 )
+  fileReference: Reference,
+  postTarget:    String,
+  formFields:    Map[String, String]
+)
 
 case class Reference(value: String) extends AnyVal
 
 case class UploadForm(href: String, fields: Map[String, String])
 object Reference {
-  implicit val referenceReader: Reads[Reference] = Reads.StringReads.map(Reference(_))
+  implicit val referenceReader: Reads[Reference]  = Reads.StringReads.map(Reference(_))
   implicit val referenceWrites: Writes[Reference] = Writes[Reference](x => JsString(x.value))
 }
 
@@ -41,6 +41,6 @@ case class PreparedUpload(reference: Reference, uploadRequest: UploadForm) {
   }
 }
 object PreparedUpload {
-  implicit val uploadFormFormat: Format[UploadForm] = Json.format[UploadForm]
-  implicit val format: Format[PreparedUpload] = Json.format[PreparedUpload]
+  implicit val uploadFormFormat: Format[UploadForm]     = Json.format[UploadForm]
+  implicit val format:           Format[PreparedUpload] = Json.format[PreparedUpload]
 }

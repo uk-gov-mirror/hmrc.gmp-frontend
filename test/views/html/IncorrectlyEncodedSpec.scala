@@ -20,8 +20,8 @@ import utils.GmpViewSpec
 
 class IncorrectlyEncodedSpec extends GmpViewSpec {
 
-  val header = Messages("gmp.bulk.incorrectlyEncoded.header")
-  val title = s"$header - ${Messages("service.name")} - ${Messages("gov.uk")}"
+  val header  = Messages("gmp.bulk.incorrectlyEncoded.header")
+  val title   = s"$header - ${Messages("service.name")} - ${Messages("gov.uk")}"
   val message = Messages("gmp.bulk.incorrectlyEncoded")
 
   lazy val layout = app.injector.instanceOf[views.html.Layout]

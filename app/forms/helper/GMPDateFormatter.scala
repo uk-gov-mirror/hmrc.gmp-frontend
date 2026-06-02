@@ -16,7 +16,7 @@
 
 package forms.helper
 
-import cats.syntax.either._
+import cats.syntax.either.*
 import models.GmpDate
 import play.api.data.FormError
 import play.api.data.format.Formatter
@@ -24,27 +24,29 @@ import play.api.data.format.Formatter
 import java.time.LocalDate
 import scala.util.{Left, Try}
 
-class GMPDateFormatter(maximumDateInclusive: Option[LocalDate],
-                       minimumDateInclusive: Option[LocalDate],
-                       dayKey: String,
-                       monthKey: String,
-                       yearKey: String,
-                       dateKey: String,
-                       tooRecentArgs: Seq[String] = Seq.empty,
-                       tooFarInPastArgs: Seq[String] = Seq.empty,
-                       onlyRequiredIf: Option[Map[String, String] => Boolean] = None) extends Formatter[GmpDate] {
+class GMPDateFormatter(
+  maximumDateInclusive: Option[LocalDate],
+  minimumDateInclusive: Option[LocalDate],
+  dayKey:               String,
+  monthKey:             String,
+  yearKey:              String,
+  dateKey:              String,
+  tooRecentArgs:        Seq[String] = Seq.empty,
+  tooFarInPastArgs:     Seq[String] = Seq.empty,
+  onlyRequiredIf:       Option[Map[String, String] => Boolean] = None
+) extends Formatter[GmpDate] {
   val YEAR_FIELD_LENGTH: Int = 4
 
   def isValidDate(x: GmpDate): Boolean =
-    try {
+    try
       x.getAsLocalDate.isDefined
-    } catch {
+    catch {
       case _: Throwable => false
     }
 
   def dateFieldStringValues(
-                             data: Map[String, String]
-                           ): Either[Seq[FormError], (String, String, String)] =
+    data: Map[String, String]
+  ): Either[Seq[FormError], (String, String, String)] =
     List(dayKey, monthKey, yearKey)
       .map(data.get(_).map(_.trim).filter(_.nonEmpty)) match {
       case Some(dayString) :: Some(monthString) :: Some(yearString) :: Nil =>
@@ -69,39 +71,40 @@ class GMPDateFormatter(maximumDateInclusive: Option[LocalDate],
     }
 
   def toValidInt(
-                  stringValue: String,
-                  maxValue: Option[Int],
-                  key: String
-                ): Either[FormError, Int] =
+    stringValue: String,
+    maxValue:    Option[Int],
+    key:         String
+  ): Either[FormError, Int] =
     Either.fromOption(
       Try(BigDecimal(stringValue).toIntExact).toOption.filter(i => i > 0 && maxValue.forall(i <= _)),
       FormError(key, "error.invalid")
     )
 
   def bind(
-            key: String,
-            data: Map[String, String]
-          ): Either[Seq[FormError], GmpDate] = {
-    if(onlyRequiredIf.isEmpty || onlyRequiredIf.get.apply(data)) {
+    key:  String,
+    data: Map[String, String]
+  ): Either[Seq[FormError], GmpDate] =
+    if onlyRequiredIf.isEmpty || onlyRequiredIf.get.apply(data) then {
       for {
         dateFields <- dateFieldStringValues(data)
         (dayStr, monthStr, yearStr) = dateFields
         month <- toValidInt(monthStr, Some(12), monthKey).leftMap(Seq(_))
-        year <- toValidInt(yearStr, None, yearKey).leftMap(Seq(_))
-        date <- toValidInt(dayStr, Some(31), dayKey).leftMap(Seq(_))
-          .flatMap(_ =>
-            Either
-              .fromTry(Try(GmpDate(Some(dayStr), Some(monthStr), Some(yearStr))))
-              .leftMap(_ => Seq(FormError(dateKey, "error.invalid")))
-          )
+        year  <- toValidInt(yearStr, None, yearKey).leftMap(Seq(_))
+        date  <- toValidInt(dayStr, Some(31), dayKey)
+                  .leftMap(Seq(_))
+                  .flatMap(_ =>
+                    Either
+                      .fromTry(Try(GmpDate(Some(dayStr), Some(monthStr), Some(yearStr))))
+                      .leftMap(_ => Seq(FormError(dateKey, "error.invalid")))
+                  )
         _ <-
-          if (yearStr.nonEmpty && (yearStr.length < YEAR_FIELD_LENGTH || yearStr.length > YEAR_FIELD_LENGTH)) {
+          if yearStr.nonEmpty && (yearStr.length < YEAR_FIELD_LENGTH || yearStr.length > YEAR_FIELD_LENGTH) then {
             Left(Seq(FormError(yearKey, "error.yearLength")))
-          } else if (!isValidDate(date)) {
+          } else if !isValidDate(date) then {
             Left(Seq(FormError(dateKey, "error.invalid")))
-          } else if (maximumDateInclusive.exists(_.isBefore(LocalDate.of(year, month, dayStr.toInt)))) {
+          } else if maximumDateInclusive.exists(_.isBefore(LocalDate.of(year, month, dayStr.toInt))) then {
             Left(Seq(FormError(dateKey, "error.tooFuture", tooRecentArgs)))
-          } else if (minimumDateInclusive.exists(_.isAfter(LocalDate.of(year, month, dayStr.toInt)))) {
+          } else if minimumDateInclusive.exists(_.isAfter(LocalDate.of(year, month, dayStr.toInt))) then {
             Left(Seq(FormError(dateKey, "error.tooFarInPast", tooFarInPastArgs)))
           } else {
             Right(date)
@@ -112,13 +115,11 @@ class GMPDateFormatter(maximumDateInclusive: Option[LocalDate],
       Right(GmpDate.emptyDate)
     }
 
-  }
-
   def unbind(key: String, value: GmpDate): Map[String, String] =
     Map(
-      dayKey -> value.day.getOrElse(""),
+      dayKey   -> value.day.getOrElse(""),
       monthKey -> value.month.getOrElse(""),
-      yearKey -> value.year.getOrElse("")
+      yearKey  -> value.year.getOrElse("")
     )
 
 }

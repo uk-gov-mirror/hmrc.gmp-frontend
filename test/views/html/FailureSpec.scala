@@ -19,12 +19,12 @@ package views.html
 import play.twirl.api.Html
 import utils.GmpViewSpec
 
-class FailureSpec extends GmpViewSpec{
+class FailureSpec extends GmpViewSpec {
   lazy val layout = app.injector.instanceOf[views.html.Layout]
-  override def view: Html = new views.html.failure(layout)(message, header, title)
-  private val message : String = "message"
-  private val header : String = "header"
-  private val title : String = "header - "
+  override def view:   Html   = new views.html.failure(layout)(message, header, title)
+  private val message: String = "message"
+  private val header:  String = "header"
+  private val title:   String = "header - "
 
   "Failure page" must {
     behave like pageWithTitle(title)

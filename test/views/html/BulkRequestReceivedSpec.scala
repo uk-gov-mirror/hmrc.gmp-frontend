@@ -20,7 +20,7 @@ import play.twirl.api.Html
 import uk.gov.hmrc.govukfrontend.views.html.components.{GovukButton, GovukPanel}
 import utils.GmpViewSpec
 
-class BulkRequestReceivedSpec extends GmpViewSpec{
+class BulkRequestReceivedSpec extends GmpViewSpec {
 
   "BulkRequestReceived page" must {
     behave like pageWithTitle(messages("gmp.bulk_request_received.banner"))
@@ -33,10 +33,10 @@ class BulkRequestReceivedSpec extends GmpViewSpec{
   }
 
   "have a button to upload another file" in {
-   doc must haveSubmitButton(messages("gmp.bulk_request_received.button"))
+    doc must haveSubmitButton(messages("gmp.bulk_request_received.button"))
   }
 
-  lazy val panel = app.injector.instanceOf[GovukPanel]
+  lazy val panel  = app.injector.instanceOf[GovukPanel]
   lazy val button = app.injector.instanceOf[GovukButton]
   lazy val layout = app.injector.instanceOf[views.html.Layout]
   override def view: Html = new views.html.bulk_request_received(layout, panel, button)(reference)

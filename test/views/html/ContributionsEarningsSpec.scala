@@ -19,25 +19,49 @@ package views.html
 import models.{CalculationPeriod, CalculationResponse, ContributionsAndEarnings}
 import java.time.LocalDate
 import play.twirl.api.Html
-import uk.gov.hmrc.govukfrontend.views.html.components.{GovukTable}
+import uk.gov.hmrc.govukfrontend.views.html.components.GovukTable
 import utils.GmpViewSpec
 import views.html.includes.{member_details_result, request_another_button}
 
 class ContributionsEarningsSpec extends GmpViewSpec {
-  lazy val layout = app.injector.instanceOf[views.html.Layout]
+  lazy val layout               = app.injector.instanceOf[views.html.Layout]
   lazy val requestAnotherButton = app.injector.instanceOf[request_another_button]
-  lazy val memberDetailsResult = app.injector.instanceOf[member_details_result]
-   val govUkTable = app.injector.instanceOf[GovukTable]
-  private val calculationResponse: CalculationResponse = CalculationResponse("name", "nino", "scon", Some("revaluationRate"),
-    Some(LocalDate.now), List(CalculationPeriod(Some(LocalDate.now), LocalDate.now(), "gmpTotal", "post", 1, 2, Some(3), Some("string"),
-      Some("string2"), Some(4), Some(List(ContributionsAndEarnings(2018, "2000"))))), 0, Some(LocalDate.now), Some(LocalDate.now), Some(LocalDate.now), true, 1)
+  lazy val memberDetailsResult  = app.injector.instanceOf[member_details_result]
+  val govUkTable                = app.injector.instanceOf[GovukTable]
+  private val calculationResponse: CalculationResponse = CalculationResponse(
+    "name",
+    "nino",
+    "scon",
+    Some("revaluationRate"),
+    Some(LocalDate.now),
+    List(
+      CalculationPeriod(
+        Some(LocalDate.now),
+        LocalDate.now(),
+        "gmpTotal",
+        "post",
+        1,
+        2,
+        Some(3),
+        Some("string"),
+        Some("string2"),
+        Some(4),
+        Some(List(ContributionsAndEarnings(2018, "2000")))
+      )
+    ),
+    0,
+    Some(LocalDate.now),
+    Some(LocalDate.now),
+    Some(LocalDate.now),
+    true,
+    1
+  )
   override def view: Html = new views.html.contributions_earnings(layout, requestAnotherButton, memberDetailsResult, govUkTable)(calculationResponse)
 
   "Contributions Earnings page" must {
     behave like pageWithTitle(messages("gmp.contributions_earnings.header"))
     behave like pageWithHeader(messages("gmp.contributions_earnings.header"))
-    behave like pageWithH2Header(messages("gmp.entered_details.title"))
-
+    behave like pageWithH3Header(messages("gmp.entered_details.title"))
 
     "have a valid back link" in {
       doc must haveLinkWithText("Back")

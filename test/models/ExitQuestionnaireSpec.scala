@@ -21,21 +21,26 @@ import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.Json
 
 class ExitQuestionnaireSpec extends AnyWordSpec with Matchers {
-  
+
   "ExitQuestionnaire Json formats" should {
     "serialise ExitQuestionnaire to Json" in {
       val exitQuestionnaire = ExitQuestionnaire(Some("easy"), Some("very_easy"), None, Some("John Mcgin"), Some("johnMcgin@aol.com"), None)
-      val json = Json.toJson(exitQuestionnaire)
+      val json              = Json.toJson(exitQuestionnaire)
       (json \ "serviceDifficulty").asOpt[String] shouldBe Some("easy")
-      (json \ "serviceFeel").asOpt[String] shouldBe Some("very_easy")
-      (json \ "comments").asOpt[String] shouldBe None
-      (json \ "fullName").asOpt[String] shouldBe Some("John Mcgin")
-      (json \ "email").asOpt[String] shouldBe Some("johnMcgin@aol.com")
-      (json \ "phoneNumber").asOpt[String] shouldBe None
+      (json \ "serviceFeel").asOpt[String]       shouldBe Some("very_easy")
+      (json \ "comments").asOpt[String]          shouldBe None
+      (json \ "fullName").asOpt[String]          shouldBe Some("John Mcgin")
+      (json \ "email").asOpt[String]             shouldBe Some("johnMcgin@aol.com")
+      (json \ "phoneNumber").asOpt[String]       shouldBe None
     }
-    
+
     "deserialise Json to ExitQuestionnaire" in {
-      val json = Json.obj("serviceDifficulty" -> Some("easy"), "serviceFeel" -> Some("very_easy"), "fullName" -> Some("John Mcgin"), "email" -> Some("johnMcgin@aol.com"))
+      val json = Json.obj(
+        "serviceDifficulty" -> Some("easy"),
+        "serviceFeel"       -> Some("very_easy"),
+        "fullName"          -> Some("John Mcgin"),
+        "email"             -> Some("johnMcgin@aol.com")
+      )
       val exitQuestionnaire = json.as[ExitQuestionnaire]
       exitQuestionnaire shouldBe ExitQuestionnaire(Some("easy"), Some("very_easy"), None, Some("John Mcgin"), Some("johnMcgin@aol.com"), None)
     }

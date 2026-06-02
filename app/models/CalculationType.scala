@@ -22,9 +22,9 @@ case class CalculationType(calcType: Option[String])
 
 object CalculationType {
   implicit val format: OFormat[CalculationType] = Json.format[CalculationType]
-  val DOL = "0"
+  val DOL         = "0"
   val REVALUATION = "1"
   val PAYABLE_AGE = "2"
-  val SURVIVOR = "3"
-  val SPA = "4"
+  val SURVIVOR    = "3"
+  val SPA         = "4"
 }

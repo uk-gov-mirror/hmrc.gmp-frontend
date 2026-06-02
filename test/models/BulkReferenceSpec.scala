@@ -21,20 +21,20 @@ import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.Json
 
 class BulkReferenceSpec extends AnyWordSpec with Matchers {
-  
+
   "BulkReference Json formats" should {
     "serialise BulkReference to Json" in {
       val bulkReference = BulkReference("test@gmail.com", "example")
-      val json = Json.toJson(bulkReference)
-      (json \ "email").as[String] shouldBe "test@gmail.com"
+      val json          = Json.toJson(bulkReference)
+      (json \ "email").as[String]     shouldBe "test@gmail.com"
       (json \ "reference").as[String] shouldBe "example"
     }
-    
+
     "deserialise Json to BulkReference" in {
-      val json = Json.obj("email" -> "test@gmail.com", "reference" -> "example")
+      val json          = Json.obj("email" -> "test@gmail.com", "reference" -> "example")
       val bulkReference = json.as[BulkReference]
       bulkReference shouldBe BulkReference("test@gmail.com", "example")
     }
-    
+
   }
 }

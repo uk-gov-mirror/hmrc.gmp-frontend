@@ -23,26 +23,26 @@ import models.upscan.UpscanInitiateRequest
 import models.upscan.{PreparedUpload, UpscanInitiateResponse}
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
-import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 
 import scala.concurrent.{ExecutionContext, Future}
 import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 
-class UpscanConnector @Inject()(
-                                 configuration: ApplicationConfig,
-                                 httpClient: HttpClientV2,
-                                 @Named("appName") val appName: String
-                               )(implicit ec: ExecutionContext) {
+class UpscanConnector @Inject() (
+  configuration:                 ApplicationConfig,
+  httpClient:                    HttpClientV2,
+  @Named("appName") val appName: String
+)(implicit ec: ExecutionContext) {
 
-  private val upscanInitiateHost: String = configuration.upscanInitiateHost
+  private val upscanInitiateHost:             String = configuration.upscanInitiateHost
   private[connectors] val upscanInitiatePath: String = "/upscan/v2/initiate"
-  private val upscanInitiateUrl: String = upscanInitiateHost + upscanInitiatePath
+  private val upscanInitiateUrl:              String = upscanInitiateHost + upscanInitiatePath
 
-  def getUpscanFormData(body: UpscanInitiateRequest)(implicit hc: HeaderCarrier): Future[UpscanInitiateResponse] = {
-    httpClient.post(url"$upscanInitiateUrl")
+  def getUpscanFormData(body: UpscanInitiateRequest)(implicit hc: HeaderCarrier): Future[UpscanInitiateResponse] =
+    httpClient
+      .post(url"$upscanInitiateUrl")
       .withBody(Json.toJson(body))
       .execute[PreparedUpload]
       .map(_.toUpscanInitiateResponse)
-  }
 }

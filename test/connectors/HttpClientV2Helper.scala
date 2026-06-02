@@ -19,22 +19,20 @@ package connectors
 import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.mockito.MockitoSugar
-import org.mockito.ArgumentMatchers._
-import org.mockito.Mockito._
+import org.mockito.ArgumentMatchers.*
+import org.mockito.Mockito.*
 import org.scalatest.concurrent.ScalaFutures
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.http.{HeaderCarrier, HttpReads}
 import java.net.URL
 import scala.concurrent.{ExecutionContext, Future}
 
+trait HttpClientV2Helper extends PlaySpec with MockitoSugar with ScalaFutures {
 
-trait HttpClientV2Helper extends PlaySpec with MockitoSugar with ScalaFutures{
-
-
-  val mockHttpPost: HttpClientV2 = mock[HttpClientV2]
-  val mockHttpGet: HttpClientV2 = mock[HttpClientV2]
-  val mockHttpPut: HttpClientV2 = mock[HttpClientV2]
-  val mockHttp: HttpClientV2 = mock[HttpClientV2]
+  val mockHttpPost:   HttpClientV2   = mock[HttpClientV2]
+  val mockHttpGet:    HttpClientV2   = mock[HttpClientV2]
+  val mockHttpPut:    HttpClientV2   = mock[HttpClientV2]
+  val mockHttp:       HttpClientV2   = mock[HttpClientV2]
   val requestBuilder: RequestBuilder = mock[RequestBuilder]
 
   when(mockHttp.get(any[URL])(using any[HeaderCarrier])).thenReturn(requestBuilder)
@@ -44,11 +42,8 @@ trait HttpClientV2Helper extends PlaySpec with MockitoSugar with ScalaFutures{
   when(requestBuilder.transform(any())).thenReturn(requestBuilder)
   when(requestBuilder.withBody(any[JsValue])(using any(), any(), any())).thenReturn(requestBuilder)
 
-
-  def requestBuilderExecute[A](result: Future[A]): Unit = {
+  def requestBuilderExecute[A](result: Future[A]): Unit =
     when(requestBuilder.execute[A](using any[HttpReads[A]], any[ExecutionContext]))
       .thenReturn(result)
-
-    }
 
 }

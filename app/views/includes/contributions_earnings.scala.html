@@ -50,17 +50,17 @@
               ))
           }
             case Some(contList: List[ContributionsAndEarnings]) if(period.errorCode != 0) => {
-                <h3 class="govuk-heading-s" id="gmp-conts-and-earnings-header-@count">
+                <h2 class="govuk-heading-m" id="gmp-conts-and-earnings-header-@count">
                     @{messages("gmp.contracted_out_period_table_header" ,s"${period.startDate.get.format(dateFormatter)} to ${period.endDate.format(dateFormatter)}")}
-                </h3>
+                </h2>
                 <p class="govuk-body" id="period-row-in-error-@count">
                     @{messages("gmp.error.no_conts_and_earnings")}
                 </p>
             }
             case _ => {
-                <h3 class="govuk-heading-s"  id="gmp-conts-and-earnings-header-@count">
+                <h2 class="govuk-heading-m"  id="gmp-conts-and-earnings-header-@count">
                 @{messages("gmp.contracted_out_period_table_header", s"${period.startDate.get.format(dateFormatter)} to ${period.endDate.format(dateFormatter)}")}
-                </h3>
+                </h2>
                 <p class="govuk-body" id="period-row-in-error-@count">
                 @{messages("gmp.error.no_conts_and_earnings")}
                 </p>

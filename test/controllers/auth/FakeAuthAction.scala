@@ -19,22 +19,22 @@ package controllers.auth
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.{MessagesControllerComponents, Request, Result}
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.domain._
+import uk.gov.hmrc.domain.*
 
-import scala.concurrent.ExecutionContext.Implicits._
+import scala.concurrent.ExecutionContext.Implicits.*
 import scala.concurrent.Future
 import scala.util.Random
 
-object FakeAuthAction extends AuthAction(
-  authConnector = new GuiceApplicationBuilder().injector().instanceOf[AuthConnector],
-  messagesControllerComponents = new GuiceApplicationBuilder().injector().instanceOf[MessagesControllerComponents],
-  externalUrls = new GuiceApplicationBuilder().injector().instanceOf[ExternalUrls]) {
+object FakeAuthAction
+    extends AuthAction(
+      authConnector = new GuiceApplicationBuilder().injector().instanceOf[AuthConnector],
+      messagesControllerComponents = new GuiceApplicationBuilder().injector().instanceOf[MessagesControllerComponents],
+      externalUrls = new GuiceApplicationBuilder().injector().instanceOf[ExternalUrls]
+    ) {
 
   val nino = NinoGenerator(new Random).nextNino
 
-
-  override def invokeBlock[A](request: Request[A], block: AuthenticatedRequest[A] => Future[Result]): Future[Result] = {
+  override def invokeBlock[A](request: Request[A], block: AuthenticatedRequest[A] => Future[Result]): Future[Result] =
 
     block(AuthenticatedRequest("testID", request))
-  }
 }

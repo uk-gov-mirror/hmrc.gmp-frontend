@@ -18,9 +18,9 @@ package models
 
 import play.api.libs.json.{Format, Json}
 case class OptionalLeavingForm(
-                              setValue: String,
-                              value: Option[Leaving]
-                              )
+  setValue: String,
+  value:    Option[Leaving]
+)
 
 object OptionalLeavingForm {
   implicit val format: Format[OptionalLeavingForm] = Json.format[OptionalLeavingForm]

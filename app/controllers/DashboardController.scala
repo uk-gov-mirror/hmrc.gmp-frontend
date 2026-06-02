@@ -29,31 +29,33 @@ import views.Views
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class DashboardController @Inject()(authAction: AuthAction,
-                                    override val authConnector: AuthConnector,
-                                    gmpBulkConnector: GmpBulkConnector,ac:ApplicationConfig,
-                                    GMPSessionService: GMPSessionService,implicit val config:GmpContext,
-                                    messagesControllerComponents: MessagesControllerComponents,
-                                    implicit val executionContext: ExecutionContext,
-                                    implicit val gmpSessionCache: GmpSessionCache,
-                                    views: Views) extends GmpPageFlow(authConnector,GMPSessionService,config,messagesControllerComponents,ac) with Logging{
+class DashboardController @Inject() (
+  authAction:                    AuthAction,
+  override val authConnector:    AuthConnector,
+  gmpBulkConnector:              GmpBulkConnector,
+  ac:                            ApplicationConfig,
+  GMPSessionService:             GMPSessionService,
+  implicit val config:           GmpContext,
+  messagesControllerComponents:  MessagesControllerComponents,
+  implicit val executionContext: ExecutionContext,
+  implicit val gmpSessionCache:  GmpSessionCache,
+  views:                         Views
+) extends GmpPageFlow(authConnector, GMPSessionService, config, messagesControllerComponents, ac)
+    with Logging {
 
-  def get = authAction.async {
-    implicit request => {
-      val link = request.linkId
-      GMPSessionService.resetGmpSessionWithScon()
+  def get = authAction.async { implicit request =>
+    val link = request.linkId
+    GMPSessionService.resetGmpSessionWithScon()
 
-      gmpBulkConnector.getPreviousBulkRequests(link).map {
-        bulkPreviousRequests => {
-          Ok(views.dashboard(bulkPreviousRequests.sorted))
-        }
-      }.recover {
-        case f => {
-          logger.error(s"[DashboardController][getPreviousBulkRequests returned {error : ${f.getMessage}")
-          Ok(views.dashboard(Nil))
-        }
+    gmpBulkConnector
+      .getPreviousBulkRequests(link)
+      .map { bulkPreviousRequests =>
+        Ok(views.dashboard(bulkPreviousRequests.sorted))
       }
-    }
+      .recover { case f =>
+        logger.error(s"[DashboardController][getPreviousBulkRequests returned {error : ${f.getMessage}")
+        Ok(views.dashboard(Nil))
+      }
   }
 
 }

@@ -27,20 +27,19 @@ trait Validator {
 
 object SconValidate extends Validator with Modulus19CheckDigit {
 
-  private val validFormat = "^S[012468]\\d{6}(?![GIOSUVZ])[A-Z]$"
+  private val validFormat            = "^S[012468]\\d{6}(?![GIOSUVZ])[A-Z]$"
   private val REFERENCE_NUMBER_START = 1
-  private val REFERENCE_NUMBER_END = 8
-  private val CHECK_DIGIT_START = 8
-  private val CHECK_DIGIT_END = 9
+  private val REFERENCE_NUMBER_END   = 8
+  private val CHECK_DIGIT_START      = 8
+  private val CHECK_DIGIT_END        = 9
 
-  override def isValid(value: String): Boolean = {
+  override def isValid(value: String): Boolean =
 
-    if (value.matches(validFormat)) {
+    if value.matches(validFormat) then {
       isCheckCorrect(value.substring(REFERENCE_NUMBER_START, REFERENCE_NUMBER_END), value.substring(CHECK_DIGIT_START, CHECK_DIGIT_END))
     } else {
       false
     }
-  }
 
 }
 
@@ -58,7 +57,7 @@ object NameValidate extends Validator {
 object SMValidate extends Validator {
   private val pattern = "(?i)^\\s*sm\\s*$"
 
-  override def isValid(sm: String) = sm .matches(pattern)
+  override def isValid(sm: String) = sm.matches(pattern)
 
   def matches(sm: String) = isValid(sm)
 }
@@ -66,72 +65,65 @@ object SMValidate extends Validator {
 object DateValidate extends Validator {
 
   private val validFormat = "^(0?[1-9]|[12][0-9]|3[01])[/](0?[1-9]|1[012])[/]\\d\\d\\d\\d$"
-  private val dateFormat = "dd/MM/yyyy"
-  private val gmpStart = {
+  private val dateFormat  = "dd/MM/yyyy"
+  private val gmpStart    =
     new SimpleDateFormat(dateFormat).parse("05/04/1978")
-  }
 
-  private val gmpEnd = {
+  private val gmpEnd =
     new SimpleDateFormat(dateFormat).parse("04/04/2046")
-  }
 
-  override def isValid(value: String): Boolean = {
-    if (value.matches(validFormat)) {
+  override def isValid(value: String): Boolean =
+    if value.matches(validFormat) then {
       val format = new SimpleDateFormat(dateFormat)
       format.setLenient(false)
       try {
         format.parse(value)
         true
       } catch {
-        case _: ParseException => {
+        case _: ParseException =>
           false
-        }
       }
     } else {
       false
     }
-  }
 
-  def isOnOrAfterGMPStart(value: String): Boolean = {
-    if (value.matches(validFormat)) {
+  def isOnOrAfterGMPStart(value: String): Boolean =
+    if value.matches(validFormat) then {
       val format = new SimpleDateFormat(dateFormat)
-      val date = format.parse(value)
+      val date   = format.parse(value)
       date.compareTo(gmpStart) >= 0
     } else {
       true
     }
-  }
 
-  def isOnOrBeforeGMPEnd(value: String): Boolean = {
-    if (value.matches(validFormat)) {
+  def isOnOrBeforeGMPEnd(value: String): Boolean =
+    if value.matches(validFormat) then {
       val format = new SimpleDateFormat(dateFormat)
-      val date = format.parse(value)
+      val date   = format.parse(value)
       date.compareTo(gmpEnd) <= 0
     } else {
       true
     }
-  }
 
 }
 
 sealed trait Modulus19CheckDigit {
 
-  protected val MOD = 19
-  protected val FIXED_VALUE = 51
+  protected val MOD           = 19
+  protected val FIXED_VALUE   = 51
   protected val CHECK_LETTERS = "ABCDEFHJKLMNPQRTWXY"
-  protected val MULTIPLY = 8
+  protected val MULTIPLY      = 8
 
   protected def isCheckCorrect(value: String, checkLetter: String): Boolean = {
 
     @tailrec
-    def total(chars: List[Char], sum: Int, multiply: Int): Int = {
+    def total(chars: List[Char], sum: Int, multiply: Int): Int =
       chars match {
         case char :: tail => total(tail, sum + (char.getNumericValue * multiply), multiply - 1)
-        case Nil => sum
+        case Nil          => sum
       }
-    }
 
-    val modulus = (total(value.toList, 0, MULTIPLY) + FIXED_VALUE) % MOD
+    val modulus          = (total(value.toList, 0, MULTIPLY) + FIXED_VALUE) % MOD
     val foundCheckLetter = CHECK_LETTERS.substring(modulus, modulus + 1)
 
     foundCheckLetter.equals(checkLetter.toUpperCase)

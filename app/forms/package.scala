@@ -22,106 +22,100 @@ package object forms {
   val YEAR_FIELD_LENGTH: Int = 4
   val nameRegex = "^[-a-zA-Z'][-a-zA-Z' ]+$".r
 
-
   def checkValidDate(data: GmpDate) = {
 
     def checkValidDate(day: Option[String], month: Option[String], year: Option[String]): Boolean = {
-      val tDay: String = day.getOrElse("")
+      val tDay:   String = day.getOrElse("")
       val tMonth: String = month.getOrElse("")
-      val tYear: String = year.getOrElse("")
-      if ((tDay.length + tMonth.length + tYear.length) == 0) {
+      val tYear:  String = year.getOrElse("")
+      if (tDay.length + tMonth.length + tYear.length) == 0 then {
         true
       } else {
         DateValidate.isValid(tDay + "/" + tMonth + "/" + tYear)
       }
     }
 
-    val day = data.day
+    val day   = data.day
     val month = data.month
-    val year = data.year
+    val year  = data.year
     checkValidDate(day, month, year)
   }
 
-  def checkYearLength(year: Option[String]): Boolean = {
+  def checkYearLength(year: Option[String]): Boolean =
     year match {
-      case Some(value) =>  if (value forall Character.isDigit) {
-        value.length == YEAR_FIELD_LENGTH
-      }else{
-        true
-      }
+      case Some(value) =>
+        if value forall Character.isDigit then {
+          value.length == YEAR_FIELD_LENGTH
+        } else {
+          true
+        }
       case None => true
     }
-  }
 
   def checkDateOnOrAfterGMPStart(data: GmpDate): Boolean = {
     def checkDateOnOrAfterGMPStart(day: Option[String], month: Option[String], year: Option[String]): Boolean = {
-      val tDay: String = day.getOrElse("")
+      val tDay:   String = day.getOrElse("")
       val tMonth: String = month.getOrElse("")
-      val tYear: String = year.getOrElse("")
-      if ((tDay.length + tMonth.length + tYear.length) == 0) {
+      val tYear:  String = year.getOrElse("")
+      if (tDay.length + tMonth.length + tYear.length) == 0 then {
         true
       } else {
         DateValidate.isOnOrAfterGMPStart(tDay + "/" + tMonth + "/" + tYear)
       }
     }
 
-    val day = data.day
+    val day   = data.day
     val month = data.month
-    val year = data.year
+    val year  = data.year
     checkDateOnOrAfterGMPStart(day, month, year)
   }
 
   def checkDateOnOBeforeGMPEnd(data: GmpDate): Boolean = {
     def checkDateOnOBeforeGMPEnd(day: Option[String], month: Option[String], year: Option[String]): Boolean = {
-      val tDay: String = day.getOrElse("")
+      val tDay:   String = day.getOrElse("")
       val tMonth: String = month.getOrElse("")
-      val tYear: String = year.getOrElse("")
-      if ((tDay.length + tMonth.length + tYear.length) == 0) {
+      val tYear:  String = year.getOrElse("")
+      if (tDay.length + tMonth.length + tYear.length) == 0 then {
         true
       } else {
         DateValidate.isOnOrBeforeGMPEnd(tDay + "/" + tMonth + "/" + tYear)
       }
     }
 
-    val day = data.day
+    val day   = data.day
     val month = data.month
-    val year = data.year
+    val year  = data.year
     checkDateOnOBeforeGMPEnd(day, month, year)
 
   }
 
-  def checkForNumber(optionValue: Option[String]): Boolean = {
+  def checkForNumber(optionValue: Option[String]): Boolean =
     optionValue match {
       case Some(value) => value forall Character.isDigit
-      case None => true
+      case None        => true
     }
-  }
 
-  def checkDayRange(optionValue: Option[String]): Boolean = {
+  def checkDayRange(optionValue: Option[String]): Boolean =
     optionValue match {
-      case Some(value) => {
-        if (value forall Character.isDigit) {
+      case Some(value) =>
+        if value forall Character.isDigit then {
           val number = value.toInt
           number > 0 && number < 32
         } else {
           true
         }
-      }
       case None => true
     }
-  }
 
-  def checkMonthRange(optionValue: Option[String]): Boolean = {
+  def checkMonthRange(optionValue: Option[String]): Boolean =
     optionValue match {
-      case Some(value) => {
-        if (value forall Character.isDigit) {
+      case Some(value) =>
+        if value forall Character.isDigit then {
           val number = value.toInt
           number > 0 && number < 13
         } else {
           true
         }
-      }
       case None => true
     }
-  }
 }

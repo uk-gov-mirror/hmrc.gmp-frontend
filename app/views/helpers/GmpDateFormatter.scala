@@ -23,8 +23,7 @@ object GmpDateFormatter {
 
   val dateFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
 
-  def formatDate(localDate: LocalDate): String = {
+  def formatDate(localDate: LocalDate): String =
     localDate.format(dateFormatter)
-  }
 
 }

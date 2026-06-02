@@ -22,14 +22,14 @@ import connectors.GmpBulkConnector
 import controllers.auth.FakeAuthAction
 import models.BulkResultsSummary
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito._
+import org.mockito.Mockito.*
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.i18n.{Lang, Messages, MessagesApi, MessagesImpl}
 import play.api.mvc.MessagesControllerComponents
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import services.GMPSessionService
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, SessionId, UpstreamErrorResponse}
@@ -39,72 +39,76 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class BulkResultsControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar {
 
-  val mockAuthConnector = mock[AuthConnector]
+  val mockAuthConnector    = mock[AuthConnector]
   val mockGmpBulkConnector = mock[GmpBulkConnector]
 
-  implicit val hc: HeaderCarrier = new HeaderCarrier(sessionId = Some(SessionId(s"session-${UUID.randomUUID}")))
-  implicit val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
-  implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
-  implicit val messagesAPI: MessagesApi = app.injector.instanceOf[MessagesApi]
-  implicit val messagesProvider: MessagesImpl = MessagesImpl(Lang("en"), messagesAPI)
+  implicit val hc:               HeaderCarrier                = new HeaderCarrier(sessionId = Some(SessionId(s"session-${UUID.randomUUID}")))
+  implicit val mcc:              MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
+  implicit val ec:               ExecutionContext             = app.injector.instanceOf[ExecutionContext]
+  implicit val messagesAPI:      MessagesApi                  = app.injector.instanceOf[MessagesApi]
+  implicit val messagesProvider: MessagesImpl                 = MessagesImpl(Lang("en"), messagesAPI)
 
   implicit val ac: ApplicationConfig = app.injector.instanceOf[ApplicationConfig]
   implicit val ss: GMPSessionService = app.injector.instanceOf[GMPSessionService]
   lazy val views = app.injector.instanceOf[Views]
 
-  object TestBulkResultsController extends BulkResultsController(FakeAuthAction,mockAuthConnector, mockGmpBulkConnector,mcc,ac,ss,FakeGmpContext,ec,views) {}
+  object TestBulkResultsController
+      extends BulkResultsController(FakeAuthAction, mockAuthConnector, mockGmpBulkConnector, mcc, ac, ss, FakeGmpContext, ec, views) {}
 
   "Bulk Results Controller" must {
     val comingFromDashboard = 0
-    val bulkResultsSummary = BulkResultsSummary("0001.csv", 50, 25)
+    val bulkResultsSummary  = BulkResultsSummary("0001.csv", 50, 25)
 
     "GET" must {
 
       "when authorised" must {
 
         "respond with a status of OK" in {
-          when(mockGmpBulkConnector.getBulkResultsSummary(any(),any())(using any())).thenReturn(Future.successful(bulkResultsSummary))
+          when(mockGmpBulkConnector.getBulkResultsSummary(any(), any())(using any())).thenReturn(Future.successful(bulkResultsSummary))
 
-            val result = TestBulkResultsController.get("",comingFromDashboard)(FakeRequest())
-            status(result) must equal(OK)
+          val result = TestBulkResultsController.get("", comingFromDashboard)(FakeRequest())
+          status(result) must equal(OK)
         }
 
         "load the results page" in {
-          when(mockGmpBulkConnector.getBulkResultsSummary(any(),any())(using any())).thenReturn(Future.successful(bulkResultsSummary))
+          when(mockGmpBulkConnector.getBulkResultsSummary(any(), any())(using any())).thenReturn(Future.successful(bulkResultsSummary))
 
-            val result = TestBulkResultsController.get("",comingFromDashboard)(FakeRequest())
+          val result = TestBulkResultsController.get("", comingFromDashboard)(FakeRequest())
 
-            contentAsString(result) must include(Messages("gmp.bulk.results.banner"))
-            contentAsString(result) must include(Messages("gmp.back.link"))
-            contentAsString(result) must include(Messages("gmp.bulk.explanations.contsandearnings"))
-            contentAsString(result) must include(Messages("gmp.bulk.query_handling_message.header"))
-            contentAsString(result) must include(Messages("gmp.bulk.query_handling_message.body"))
+          contentAsString(result) must include(Messages("gmp.bulk.results.banner"))
+          contentAsString(result) must include(Messages("gmp.back.link"))
+          contentAsString(result) must include(Messages("gmp.bulk.explanations.contsandearnings"))
+          contentAsString(result) must include(Messages("gmp.bulk.query_handling_message.header"))
+          contentAsString(result) must include(Messages("gmp.bulk.query_handling_message.body"))
         }
 
         "contain correct successful count" in {
 
+          when(mockGmpBulkConnector.getBulkResultsSummary(any(), any())(using any())).thenReturn(Future.successful(bulkResultsSummary))
 
-          when(mockGmpBulkConnector.getBulkResultsSummary(any(),any())(using any())).thenReturn(Future.successful(bulkResultsSummary))
+          val result = TestBulkResultsController.get("", comingFromDashboard)(FakeRequest())
 
-            val result = TestBulkResultsController.get("",comingFromDashboard)(FakeRequest())
-
-            contentAsString(result) must include(Messages("gmp.bulk.subheaders.successfulcalculations") + " (" + (bulkResultsSummary.total - bulkResultsSummary.failed) + ")")
+          contentAsString(result) must include(
+            Messages("gmp.bulk.subheaders.successfulcalculations") + " (" + (bulkResultsSummary.total - bulkResultsSummary.failed) + ")"
+          )
 
         }
 
         "show the incorrect user page" in {
-          when(mockGmpBulkConnector.getBulkResultsSummary(any(),any())(using any())).thenReturn(Future.failed(UpstreamErrorResponse("", FORBIDDEN, 0, Map())))
-            val result = TestBulkResultsController.get("",comingFromDashboard)(FakeRequest())
+          when(mockGmpBulkConnector.getBulkResultsSummary(any(), any())(using any()))
+            .thenReturn(Future.failed(UpstreamErrorResponse("", FORBIDDEN, 0, Map())))
+          val result = TestBulkResultsController.get("", comingFromDashboard)(FakeRequest())
 
-            contentAsString(result) must include(Messages("gmp.bulk.wrong_user.login_text"))
+          contentAsString(result) must include(Messages("gmp.bulk.wrong_user.login_text"))
         }
 
         "show the calc not found page" in {
-          when(mockGmpBulkConnector.getBulkResultsSummary(any(),any())(using any())).thenReturn(Future.failed(UpstreamErrorResponse("Not Found", 404)))
+          when(mockGmpBulkConnector.getBulkResultsSummary(any(), any())(using any()))
+            .thenReturn(Future.failed(UpstreamErrorResponse("Not Found", 404)))
 
-            val result = TestBulkResultsController.get("",comingFromDashboard)(FakeRequest())
+          val result = TestBulkResultsController.get("", comingFromDashboard)(FakeRequest())
 
-            contentAsString(result) must include(Messages("gmp.bulk.results_not_found"))
+          contentAsString(result) must include(Messages("gmp.bulk.results_not_found"))
         }
       }
     }
@@ -113,25 +117,25 @@ class BulkResultsControllerSpec extends PlaySpec with GuiceOneServerPerSuite wit
 
       "download the results summary in csv format" in {
 
-        when(mockGmpBulkConnector.getResultsAsCsv(any(),any(),any())(using any())).thenReturn(Future.successful(HttpResponse(200, "CSV STRING")))
+        when(mockGmpBulkConnector.getResultsAsCsv(any(), any(), any())(using any())).thenReturn(Future.successful(HttpResponse(200, "CSV STRING")))
 
-          val result = TestBulkResultsController.getResultsAsCsv("","")(FakeRequest())
+        val result = TestBulkResultsController.getResultsAsCsv("", "")(FakeRequest())
 
-          contentAsString(result) must be("CSV STRING")
+        contentAsString(result) must be("CSV STRING")
       }
 
     }
-
 
     "getContributionsAsCsv" must {
 
       "download the contributions and earnings in csv format" in {
 
-        when(mockGmpBulkConnector.getContributionsAndEarningsAsCsv(any(),any())(using any())).thenReturn(Future.successful(HttpResponse(200, "CSV STRING")))
+        when(mockGmpBulkConnector.getContributionsAndEarningsAsCsv(any(), any())(using any()))
+          .thenReturn(Future.successful(HttpResponse(200, "CSV STRING")))
 
-          val result = TestBulkResultsController.getContributionsAndEarningsAsCsv("")(FakeRequest())
+        val result = TestBulkResultsController.getContributionsAndEarningsAsCsv("")(FakeRequest())
 
-          contentAsString(result) must be("CSV STRING")
+        contentAsString(result) must be("CSV STRING")
       }
 
     }

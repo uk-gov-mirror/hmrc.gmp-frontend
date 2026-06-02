@@ -16,7 +16,6 @@
 
 package controllers
 
-
 import com.google.inject.{Inject, Singleton}
 import config.{ApplicationConfig, GmpContext, GmpSessionCache}
 import controllers.auth.AuthAction
@@ -31,84 +30,89 @@ import views.Views
 
 import scala.concurrent.ExecutionContext
 
-
 @Singleton
-class RevaluationRateController @Inject()( authAction: AuthAction,
-                                           override val authConnector: AuthConnector,
-                                           ac:ApplicationConfig,
-                                           GMPSessionService: GMPSessionService,
-                                           implicit val config:GmpContext,
-                                           override val messagesControllerComponents: MessagesControllerComponents,
-                                           rrf:RevaluationRateForm,
-                                           implicit val executionContext: ExecutionContext,
-                                           implicit val gmpSessionCache: GmpSessionCache,
-                                           views: Views
-                                         ) extends GmpPageFlow(authConnector,GMPSessionService,config,messagesControllerComponents,ac) with Logging{
+class RevaluationRateController @Inject() (
+  authAction:                                AuthAction,
+  override val authConnector:                AuthConnector,
+  ac:                                        ApplicationConfig,
+  GMPSessionService:                         GMPSessionService,
+  implicit val config:                       GmpContext,
+  override val messagesControllerComponents: MessagesControllerComponents,
+  rrf:                                       RevaluationRateForm,
+  implicit val executionContext:             ExecutionContext,
+  implicit val gmpSessionCache:              GmpSessionCache,
+  views:                                     Views
+) extends GmpPageFlow(authConnector, GMPSessionService, config, messagesControllerComponents, ac)
+    with Logging {
 
   lazy val revaluationRateForm = rrf.revaluationRateForm
 
-  def get = authAction.async {
-    implicit request => GMPSessionService.fetchGmpSession() map {
-      case Some(session) => session match {
-        case _ if session.scon == "" =>
-          Ok(views.failure(
-            Messages("gmp.error.session_parts_missing", "/guaranteed-minimum-pension/pension-details"),
-            Messages("gmp.cannot_calculate.gmp"),
-            Messages("gmp.session_missing.title")
-          ))
-        case _ if session.memberDetails.nino == "" || session.memberDetails.firstForename == "" || session.memberDetails.surname == "" =>
-          Ok(views.failure(
-            Messages("gmp.error.session_parts_missing", "/guaranteed-minimum-pension/member-details"),
-            Messages("gmp.cannot_calculate.gmp"),
-            Messages("gmp.session_missing.title")
-          ))
-        case _ if session.scenario == "" =>
-          Ok(views.failure(
-            Messages("gmp.error.session_parts_missing", "/guaranteed-minimum-pension/calculation-reason"),
-            Messages("gmp.cannot_calculate.gmp"),
-            Messages("gmp.session_missing.title")
-          ))
-        case _ if session.leaving.leaving.isEmpty =>
-          Ok(views.failure(
-            Messages("gmp.error.session_parts_missing", "/guaranteed-minimum-pension/left-scheme"),
-            Messages("gmp.cannot_calculate.gmp"),
-            Messages("gmp.session_missing.title")
-          ))
-        case _ => Ok(views.revaluationRate(revaluationRateForm.fill(RevaluationRate(session.rate)), session))
-      }
+  def get = authAction.async { implicit request =>
+    GMPSessionService.fetchGmpSession() map {
+      case Some(session) =>
+        session match {
+          case _ if session.scon == "" =>
+            Ok(
+              views.failure(
+                Messages("gmp.error.session_parts_missing", "/guaranteed-minimum-pension/pension-details"),
+                Messages("gmp.cannot_calculate.gmp"),
+                Messages("gmp.session_missing.title")
+              )
+            )
+          case _ if session.memberDetails.nino == "" || session.memberDetails.firstForename == "" || session.memberDetails.surname == "" =>
+            Ok(
+              views.failure(
+                Messages("gmp.error.session_parts_missing", "/guaranteed-minimum-pension/member-details"),
+                Messages("gmp.cannot_calculate.gmp"),
+                Messages("gmp.session_missing.title")
+              )
+            )
+          case _ if session.scenario == "" =>
+            Ok(
+              views.failure(
+                Messages("gmp.error.session_parts_missing", "/guaranteed-minimum-pension/calculation-reason"),
+                Messages("gmp.cannot_calculate.gmp"),
+                Messages("gmp.session_missing.title")
+              )
+            )
+          case _ if session.leaving.leaving.isEmpty =>
+            Ok(
+              views.failure(
+                Messages("gmp.error.session_parts_missing", "/guaranteed-minimum-pension/left-scheme"),
+                Messages("gmp.cannot_calculate.gmp"),
+                Messages("gmp.session_missing.title")
+              )
+            )
+          case _ => Ok(views.revaluationRate(revaluationRateForm.fill(RevaluationRate(session.rate)), session))
+        }
       case _ => throw new RuntimeException
     }
 
   }
 
-  def post = authAction.async {
-    implicit request => {
+  def post = authAction.async { implicit request =>
+    logger.debug(s"[RevaluationRateController][post][POST] : ${request.body}")
 
-      logger.debug(s"[RevaluationRateController][post][POST] : ${request.body}")
-
-      revaluationRateForm.bindFromRequest().fold(
-        formWithErrors => {
+    revaluationRateForm
+      .bindFromRequest()
+      .fold(
+        formWithErrors =>
           GMPSessionService.fetchGmpSession() map {
             case Some(x) => BadRequest(views.revaluationRate(formWithErrors, x))
-            case _ => throw new RuntimeException
-          }
-        },
-        revaluationRate => {
+            case _       => throw new RuntimeException
+          },
+        revaluationRate =>
           GMPSessionService.cacheRevaluationRate(revaluationRate.rateType.get) map {
             case Some(session) => nextPage("RevaluationRateController", session)
-            case _ => throw new RuntimeException
+            case _             => throw new RuntimeException
           }
-        }
       )
-    }
   }
 
-  def back = authAction.async {
-    implicit request => {
-      GMPSessionService.fetchGmpSession() map {
-        case Some(session) => previousPage("RevaluationRateController", session)
-        case _ => throw new RuntimeException
-      }
+  def back = authAction.async { implicit request =>
+    GMPSessionService.fetchGmpSession() map {
+      case Some(session) => previousPage("RevaluationRateController", session)
+      case _             => throw new RuntimeException
     }
   }
 

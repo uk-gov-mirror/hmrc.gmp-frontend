@@ -29,52 +29,48 @@ import views.Views
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class MemberDetailsController @Inject()(authAction: AuthAction,
-                                        override val authConnector: AuthConnector,
-                                        GMPSessionService: GMPSessionService,
-                                        implicit val config:GmpContext,
-                                        override val messagesControllerComponents: MessagesControllerComponents,
-                                        ac:ApplicationConfig,mdf:MemberDetailsForm,
-                                        implicit val executionContext: ExecutionContext,
-                                        implicit val gmpSessionCache: GmpSessionCache,
-                                        views: Views) extends GmpPageFlow(authConnector,GMPSessionService,config,messagesControllerComponents,ac) with Logging{
+class MemberDetailsController @Inject() (
+  authAction:                                AuthAction,
+  override val authConnector:                AuthConnector,
+  GMPSessionService:                         GMPSessionService,
+  implicit val config:                       GmpContext,
+  override val messagesControllerComponents: MessagesControllerComponents,
+  ac:                                        ApplicationConfig,
+  mdf:                                       MemberDetailsForm,
+  implicit val executionContext:             ExecutionContext,
+  implicit val gmpSessionCache:              GmpSessionCache,
+  views:                                     Views
+) extends GmpPageFlow(authConnector, GMPSessionService, config, messagesControllerComponents, ac)
+    with Logging {
 
-  lazy val form=mdf.form()
+  lazy val form = mdf.form()
 
-  def get = authAction.async {
-    implicit request => {
-      GMPSessionService.fetchMemberDetails() map {
-        case Some(memberDetails) => Ok(views.memberDetails(form.fill(memberDetails)))
-        case _ => Ok(views.memberDetails(form))
-      }
+  def get = authAction.async { implicit request =>
+    GMPSessionService.fetchMemberDetails() map {
+      case Some(memberDetails) => Ok(views.memberDetails(form.fill(memberDetails)))
+      case _                   => Ok(views.memberDetails(form))
     }
   }
 
-  def post = authAction.async {
-    implicit request => {
+  def post = authAction.async { implicit request =>
+    logger.debug(s"[MemberDetailsController][POST] : ${request.body}")
 
-      logger.debug(s"[MemberDetailsController][POST] : ${request.body}")
-
-      form.bindFromRequest().fold(
-        formWithErrors => {
-          Future.successful(BadRequest(views.memberDetails(formWithErrors)))
-        },
-        memberDetails => {
+    form
+      .bindFromRequest()
+      .fold(
+        formWithErrors => Future.successful(BadRequest(views.memberDetails(formWithErrors))),
+        memberDetails =>
           GMPSessionService.cacheMemberDetails(memberDetails) map {
             case Some(session) => nextPage("MemberDetailsController", session)
-            case _ => throw new RuntimeException
+            case _             => throw new RuntimeException
           }
-        }
       )
-    }
   }
 
-  def back = authAction.async {
-    implicit request => {
-      GMPSessionService.fetchGmpSession() map {
-        case Some(session) => previousPage("MemberDetailsController", session)
-        case _ => throw new RuntimeException
-      }
+  def back = authAction.async { implicit request =>
+    GMPSessionService.fetchGmpSession() map {
+      case Some(session) => previousPage("MemberDetailsController", session)
+      case _             => throw new RuntimeException
     }
   }
 

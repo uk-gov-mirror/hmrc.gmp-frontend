@@ -22,8 +22,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.Future
 
-
-class GmpContextImpl @Inject()(contactFrontendConnector: ContactFrontendConnector) extends GmpContext {
+class GmpContextImpl @Inject() (contactFrontendConnector: ContactFrontendConnector) extends GmpContext {
 
   def getPageHelpPartial()(implicit hc: HeaderCarrier): Future[String] = contactFrontendConnector.getHelpPartial
 

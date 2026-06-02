@@ -36,23 +36,27 @@ import uk.gov.hmrc.crypto.json.CryptoFormats
 import org.mongodb.scala.SingleObservableFuture
 import org.mongodb.scala.ObservableFuture
 
-import java.time._
+import java.time.*
 import java.util.concurrent.TimeUnit
 
 class SingleCalculationSessionRepositorySpec
-  extends AnyFreeSpec
+    extends AnyFreeSpec
     with Matchers
     with ScalaFutures
     with IntegrationPatience
-    with OptionValues with GuiceOneAppPerSuite with FutureAwaits with DefaultAwaitTimeout with BeforeAndAfterEach {
+    with OptionValues
+    with GuiceOneAppPerSuite
+    with FutureAwaits
+    with DefaultAwaitTimeout
+    with BeforeAndAfterEach {
 
   override lazy val app: Application = GuiceApplicationBuilder()
     .overrides(bind[Clock].toInstance(Clock.systemDefaultZone().withZone(ZoneOffset.UTC)))
     .build()
 
-  val repository: SingleCalculationSessionRepository = app.injector.instanceOf[SingleCalculationSessionRepository]
-  val encryption: Encryption = app.injector.instanceOf[Encryption]
-  implicit val cryptEncryptedValueFormats: Format[EncryptedValue]  = CryptoFormats.encryptedValueFormat
+  val repository:                          SingleCalculationSessionRepository = app.injector.instanceOf[SingleCalculationSessionRepository]
+  val encryption:                          Encryption                         = app.injector.instanceOf[Encryption]
+  implicit val cryptEncryptedValueFormats: Format[EncryptedValue]             = CryptoFormats.encryptedValueFormat
 
   override def beforeEach(): Unit = {
     await(repository.collection.deleteMany(BsonDocument()).toFuture())
@@ -65,10 +69,10 @@ class SingleCalculationSessionRepositorySpec
   }
 
   val memberDetails: MemberDetails = MemberDetails("John", "Doe", RandomNino.generate)
-  val leaving: Leaving = Leaving(currentDateGmp, Some(Leaving.YES_BEFORE))
-  val scon = "S123456789T"
+  val leaving:       Leaving       = Leaving(currentDateGmp, Some(Leaving.YES_BEFORE))
+  val scon     = "S123456789T"
   val scenario = "Scenario 1"
-  val rate = "4.5%"
+  val rate     = "4.5%"
   val equalise = 1
 
   val gmpSession: GmpSession = GmpSession(
@@ -81,16 +85,16 @@ class SingleCalculationSessionRepositorySpec
     equalise = Some(equalise)
   )
 
-
-
   "indexes" - {
     "are correct" in {
-      repository.indexes.toList.toString() mustBe List(IndexModel(
-        Indexes.ascending("lastModified"),
-        IndexOptions()
-          .name("lastModifiedIdx")
-          .expireAfter(900, TimeUnit.SECONDS)
-      )).toString()
+      repository.indexes.toList.toString() mustBe List(
+        IndexModel(
+          Indexes.ascending("lastModified"),
+          IndexOptions()
+            .name("lastModifiedIdx")
+            .expireAfter(900, TimeUnit.SECONDS)
+        )
+      ).toString()
     }
   }
 
@@ -101,14 +105,18 @@ class SingleCalculationSessionRepositorySpec
         gmpSession = gmpSession,
         lastModified = Instant.ofEpochSecond(1)
       )
-      val timeBeforeTest = Instant.now()
-      val setResult = await(repository.set(sessionCacheBefore))
-      val updatedRecord = await(repository.get(sessionCacheBefore.id)).get
+      val timeBeforeTest     = Instant.now()
+      val setResult          = await(repository.set(sessionCacheBefore))
+      val updatedRecord      = await(repository.get(sessionCacheBefore.id)).get
       lazy val timeAfterTest = Instant.now()
 
       setResult mustEqual true
-      assert(updatedRecord.lastModified.toEpochMilli > timeBeforeTest.toEpochMilli || updatedRecord.lastModified.toEpochMilli == timeBeforeTest.toEpochMilli)
-      assert(updatedRecord.lastModified.toEpochMilli < timeAfterTest.toEpochMilli || updatedRecord.lastModified.toEpochMilli == timeAfterTest.toEpochMilli)
+      assert(
+        updatedRecord.lastModified.toEpochMilli > timeBeforeTest.toEpochMilli || updatedRecord.lastModified.toEpochMilli == timeBeforeTest.toEpochMilli
+      )
+      assert(
+        updatedRecord.lastModified.toEpochMilli < timeAfterTest.toEpochMilli || updatedRecord.lastModified.toEpochMilli == timeAfterTest.toEpochMilli
+      )
 
       updatedRecord.id mustBe sessionCacheBefore.id
       updatedRecord.gmpSession.memberDetails mustBe sessionCacheBefore.gmpSession.memberDetails
@@ -130,10 +138,11 @@ class SingleCalculationSessionRepositorySpec
       val setResult = await(repository.set(sessionCacheBefore))
       setResult mustEqual true
 
-      val updatedRecord = await(repository.collection.find[BsonDocument](BsonDocument()).toFuture()).head
+      val updatedRecord      = await(repository.collection.find[BsonDocument](BsonDocument()).toFuture()).head
       val resultParsedToJson = Json.parse(updatedRecord.toJson).as[JsObject]
 
-      val gmpSessionDecrypted = Json.parse(encryption.crypto.decrypt((resultParsedToJson \ "gmpSession").as[EncryptedValue], sessionCacheBefore.id)).as[GmpSession]
+      val gmpSessionDecrypted =
+        Json.parse(encryption.crypto.decrypt((resultParsedToJson \ "gmpSession").as[EncryptedValue], sessionCacheBefore.id)).as[GmpSession]
 
       gmpSessionDecrypted mustBe sessionCacheBefore.gmpSession
 
@@ -152,12 +161,16 @@ class SingleCalculationSessionRepositorySpec
         )
         await(repository.set(sessionCacheBefore))
 
-        val timeBeforeTest = Instant.now()
-        val updatedRecord = await(repository.get(sessionCacheBefore.id)).get
+        val timeBeforeTest     = Instant.now()
+        val updatedRecord      = await(repository.get(sessionCacheBefore.id)).get
         lazy val timeAfterTest = Instant.now()
 
-        assert(updatedRecord.lastModified.toEpochMilli > timeBeforeTest.toEpochMilli || updatedRecord.lastModified.toEpochMilli == timeBeforeTest.toEpochMilli)
-        assert(updatedRecord.lastModified.toEpochMilli < timeAfterTest.toEpochMilli || updatedRecord.lastModified.toEpochMilli == timeAfterTest.toEpochMilli)
+        assert(
+          updatedRecord.lastModified.toEpochMilli > timeBeforeTest.toEpochMilli || updatedRecord.lastModified.toEpochMilli == timeBeforeTest.toEpochMilli
+        )
+        assert(
+          updatedRecord.lastModified.toEpochMilli < timeAfterTest.toEpochMilli || updatedRecord.lastModified.toEpochMilli == timeAfterTest.toEpochMilli
+        )
 
         updatedRecord.id mustBe sessionCacheBefore.id
         updatedRecord.gmpSession.memberDetails mustBe sessionCacheBefore.gmpSession.memberDetails

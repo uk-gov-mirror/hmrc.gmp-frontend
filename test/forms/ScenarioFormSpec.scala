@@ -27,9 +27,9 @@ import play.api.mvc.MessagesControllerComponents
 
 class ScenarioFormSpec extends PlaySpec with GuiceOneAppPerSuite with MockitoSugar {
 
-  implicit lazy val messagesAPI: MessagesApi = app.injector.instanceOf[MessagesApi]
+  implicit lazy val messagesAPI:      MessagesApi  = app.injector.instanceOf[MessagesApi]
   implicit lazy val messagesProvider: MessagesImpl = MessagesImpl(Lang("en"), messagesAPI)
-  lazy val mcc = app.injector.instanceOf[MessagesControllerComponents]
+  lazy val mcc          = app.injector.instanceOf[MessagesControllerComponents]
   lazy val scenarioForm = new ScenarioForm(mcc).scenarioForm
   val fromJsonMaxChars: Int = 102400
 
@@ -37,11 +37,11 @@ class ScenarioFormSpec extends PlaySpec with GuiceOneAppPerSuite with MockitoSug
 
     "be valid when passed a calculation reason" in {
 
-      val calculationReason = Json.toJson(CalculationType(Some("1")))
+      val calculationReason       = Json.toJson(CalculationType(Some("1")))
       val calculationReasonResult = scenarioForm.bind(calculationReason, fromJsonMaxChars)
 
       assert(calculationReasonResult.errors.size == 0)
-      assert(!calculationReasonResult.errors.contains(FormError("calcType",List("gmp.error.scenario.mandatory"))))
+      assert(!calculationReasonResult.errors.contains(FormError("calcType", List("gmp.error.scenario.mandatory"))))
 
     }
 
@@ -49,17 +49,15 @@ class ScenarioFormSpec extends PlaySpec with GuiceOneAppPerSuite with MockitoSug
       val calculationReasonResult = scenarioForm.bind(Map[String, String]())
 
       assert(calculationReasonResult.errors.size == 1)
-      assert(calculationReasonResult.errors.contains(FormError("calcType",List(Messages("gmp.error.scenario.mandatory")))))
+      assert(calculationReasonResult.errors.contains(FormError("calcType", List(Messages("gmp.error.scenario.mandatory")))))
     }
 
-    "does not accept invalid format" in  {
-      val calculationReason = Json.toJson(CalculationType(Some("%&20!")))
+    "does not accept invalid format" in {
+      val calculationReason       = Json.toJson(CalculationType(Some("%&20!")))
       val calculationReasonResult = scenarioForm.bind(calculationReason, fromJsonMaxChars)
       assert(calculationReasonResult.errors.size == 1)
-      assert(calculationReasonResult.errors.contains(FormError("calcType",List(Messages("gmp.error.scenario.mandatory")))))
+      assert(calculationReasonResult.errors.contains(FormError("calcType", List(Messages("gmp.error.scenario.mandatory")))))
     }
   }
-
-
 
 }

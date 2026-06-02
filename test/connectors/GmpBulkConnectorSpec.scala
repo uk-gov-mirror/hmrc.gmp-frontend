@@ -18,15 +18,15 @@ package connectors
 
 import java.util.UUID
 import helpers.RandomNino
-import models._
+import models.*
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito._
+import org.mockito.Mockito.*
 import org.scalatest.BeforeAndAfter
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Environment
 import play.api.libs.json.Json
-import play.api.test.Helpers._
-import uk.gov.hmrc.http._
+import play.api.test.Helpers.*
+import uk.gov.hmrc.http.*
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import java.net.URL
@@ -36,14 +36,11 @@ class GmpBulkConnectorSpec extends HttpClientV2Helper with GuiceOneServerPerSuit
 
   implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
 
-  val link = "some-link"
+  val link  = "some-link"
   val psaId = "B1234567"
 
-  object testGmpBulkConnector extends GmpBulkConnector(
-    app.injector.instanceOf[Environment],
-    app.configuration,
-    mockHttp,
-    app.injector.instanceOf[ServicesConfig])
+  object testGmpBulkConnector
+      extends GmpBulkConnector(app.injector.instanceOf[Environment], app.configuration, mockHttp, app.injector.instanceOf[ServicesConfig])
 
   when(mockHttp.get(any[URL])(using any[HeaderCarrier])).thenReturn(requestBuilder)
   when(mockHttp.post(any[URL])(using any[HeaderCarrier])).thenReturn(requestBuilder)
@@ -56,10 +53,21 @@ class GmpBulkConnectorSpec extends HttpClientV2Helper with GuiceOneServerPerSuit
 
       requestBuilderExecute[HttpResponse](Future.successful(HttpResponse(OK, "200")))
 
-      val bcr = BulkCalculationRequest("upload1", "jim@jarmusch.com", "idreference",
-        List(BulkCalculationRequestLine(1, Some(CalculationRequestLine("S1234567C", RandomNino.generate,
-          "bob", "bobbleton", Some("bobby"), Some(0), Some("2012-02-02"), None, None, 0)),
-          None, None)))
+      val bcr = BulkCalculationRequest(
+        "upload1",
+        "jim@jarmusch.com",
+        "idreference",
+        List(
+          BulkCalculationRequestLine(
+            1,
+            Some(
+              CalculationRequestLine("S1234567C", RandomNino.generate, "bob", "bobbleton", Some("bobby"), Some(0), Some("2012-02-02"), None, None, 0)
+            ),
+            None,
+            None
+          )
+        )
+      )
 
       val result = testGmpBulkConnector.sendBulkRequest(bcr, link)
       result.futureValue must be(OK)
@@ -70,39 +78,72 @@ class GmpBulkConnectorSpec extends HttpClientV2Helper with GuiceOneServerPerSuit
 
       requestBuilderExecute[HttpResponse](Future.failed(UpstreamErrorResponse("Tried to insert duplicate", 409, 409)))
 
-      val bcr = BulkCalculationRequest("upload1", "jim@jarmusch.com", "idreference",
-        List(BulkCalculationRequestLine(1, Some(CalculationRequestLine("S1234567C", RandomNino.generate,
-          "bob", "bobbleton", Some("bobby"), Some(0), Some("2012-02-02"), None, None, 0)),
-          None, None)))
+      val bcr = BulkCalculationRequest(
+        "upload1",
+        "jim@jarmusch.com",
+        "idreference",
+        List(
+          BulkCalculationRequestLine(
+            1,
+            Some(
+              CalculationRequestLine("S1234567C", RandomNino.generate, "bob", "bobbleton", Some("bobby"), Some(0), Some("2012-02-02"), None, None, 0)
+            ),
+            None,
+            None
+          )
+        )
+      )
 
       val result = testGmpBulkConnector.sendBulkRequest(bcr, link).futureValue
-      (result) must be(CONFLICT)
+      result must be(CONFLICT)
     }
 
     "send a bulk request with valid data but the file is too large" in {
 
       requestBuilderExecute[HttpResponse](Future.failed(UpstreamErrorResponse("File too large", 413, 413)))
 
-      val bcr = BulkCalculationRequest("upload1", "jim@jarmusch.com", "idreference",
-        List(BulkCalculationRequestLine(1, Some(CalculationRequestLine("S1234567C", RandomNino.generate,
-          "bob", "bobbleton", Some("bobby"), Some(0), Some("2012-02-02"), None, None, 0)),
-          None, None)))
+      val bcr = BulkCalculationRequest(
+        "upload1",
+        "jim@jarmusch.com",
+        "idreference",
+        List(
+          BulkCalculationRequestLine(
+            1,
+            Some(
+              CalculationRequestLine("S1234567C", RandomNino.generate, "bob", "bobbleton", Some("bobby"), Some(0), Some("2012-02-02"), None, None, 0)
+            ),
+            None,
+            None
+          )
+        )
+      )
 
       val result = testGmpBulkConnector.sendBulkRequest(bcr, link).futureValue
-      (result) must be(REQUEST_ENTITY_TOO_LARGE)
+      result must be(REQUEST_ENTITY_TOO_LARGE)
     }
 
     "send a bulk request with valid data but bulk fails" in {
 
       requestBuilderExecute[HttpResponse](Future.failed(UpstreamErrorResponse("Failed generically", 500, 500)))
 
-      val bcr = BulkCalculationRequest("upload1", "jim@jarmusch.com", "idreference",
-        List(BulkCalculationRequestLine(1, Some(CalculationRequestLine("S1234567C", RandomNino.generate,
-          "bob", "bobbleton", Some("bobby"), Some(0), Some("2012-02-02"), None, None, 0)),
-          None, None)))
+      val bcr = BulkCalculationRequest(
+        "upload1",
+        "jim@jarmusch.com",
+        "idreference",
+        List(
+          BulkCalculationRequestLine(
+            1,
+            Some(
+              CalculationRequestLine("S1234567C", RandomNino.generate, "bob", "bobbleton", Some("bobby"), Some(0), Some("2012-02-02"), None, None, 0)
+            ),
+            None,
+            None
+          )
+        )
+      )
 
       val result = await(testGmpBulkConnector.sendBulkRequest(bcr, link))
-      (result) must be(500)
+      result must be(500)
     }
 
     "retrieve bulk requests associated with the user " in {
@@ -113,8 +154,8 @@ class GmpBulkConnectorSpec extends HttpClientV2Helper with GuiceOneServerPerSuit
 
       requestBuilderExecute[List[BulkPreviousRequest]](Future.successful(bulkPreviousRequest.as[List[BulkPreviousRequest]]))
 
-      val result = testGmpBulkConnector.getPreviousBulkRequests(link)
-      val resolvedResult = (result).futureValue
+      val result         = testGmpBulkConnector.getPreviousBulkRequests(link)
+      val resolvedResult = result.futureValue
 
       resolvedResult.head.uploadReference must be("uploadRef")
 
@@ -125,15 +166,15 @@ class GmpBulkConnectorSpec extends HttpClientV2Helper with GuiceOneServerPerSuit
       requestBuilderExecute[BulkResultsSummary](Future.successful(BulkResultsSummary("test", 1, 1)))
 
       val result = testGmpBulkConnector.getBulkResultsSummary("", link).futureValue
-      (result).reference must be("test")
+      result.reference must be("test")
     }
 
     "return all bulk request as csv" in {
 
       requestBuilderExecute[HttpResponse](Future.successful(HttpResponse(OK, "THIS IS A CSV STRING")))
 
-      val result = testGmpBulkConnector.getResultsAsCsv("", "", link)
-      val resolvedResult = (result).futureValue
+      val result         = testGmpBulkConnector.getResultsAsCsv("", "", link)
+      val resolvedResult = result.futureValue
 
       resolvedResult.body must be("THIS IS A CSV STRING")
     }
@@ -142,8 +183,8 @@ class GmpBulkConnectorSpec extends HttpClientV2Helper with GuiceOneServerPerSuit
 
       requestBuilderExecute[HttpResponse](Future.successful(HttpResponse(OK, "THIS IS A CSV STRING")))
 
-      val result = testGmpBulkConnector.getContributionsAndEarningsAsCsv("", link)
-      val resolvedResult = (result).futureValue
+      val result         = testGmpBulkConnector.getContributionsAndEarningsAsCsv("", link)
+      val resolvedResult = result.futureValue
 
       resolvedResult.body must be("THIS IS A CSV STRING")
 

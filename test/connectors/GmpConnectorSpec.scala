@@ -19,39 +19,39 @@ package connectors
 import java.util.UUID
 import helpers.RandomNino
 import metrics.ApplicationMetrics
-import models._
-import org.mockito.ArgumentMatchers._
-import org.mockito.Mockito._
+import models.*
+import org.mockito.ArgumentMatchers.*
+import org.mockito.Mockito.*
 import org.scalatest.BeforeAndAfter
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Environment
 import play.api.libs.json.Json
-import play.api.test.Helpers._
-import uk.gov.hmrc.http._
+import play.api.test.Helpers.*
+import uk.gov.hmrc.http.*
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import scala.concurrent.Future
 
-
 class GmpConnectorSpec extends HttpClientV2Helper with GuiceOneServerPerSuite with BeforeAndAfter {
   implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
-  val email = "Bill@Gill.com"
+  val email     = "Bill@Gill.com"
   val reference = "Smith's Reference"
-  val groupId = "S1401234A"
-  val link = "some-link"
-  val psaId = "B1234567"
-  val pspId = "11111111"
-  val nino = RandomNino.generate
+  val groupId   = "S1401234A"
+  val link      = "some-link"
+  val psaId     = "B1234567"
+  val pspId     = "11111111"
+  val nino      = RandomNino.generate
 
   val metrics = app.injector.instanceOf[ApplicationMetrics]
 
-  object TestGmpConnector extends GmpConnector(
-    app.injector.instanceOf[Environment],
-    app.configuration,
-    metrics,
-    mockHttp,
-    app.injector.instanceOf[ServicesConfig]
-  )
+  object TestGmpConnector
+      extends GmpConnector(
+        app.injector.instanceOf[Environment],
+        app.configuration,
+        metrics,
+        mockHttp,
+        app.injector.instanceOf[ServicesConfig]
+      )
 
   before {
     reset(mockHttp, requestBuilder)
@@ -91,12 +91,11 @@ class GmpConnectorSpec extends HttpClientV2Helper with GuiceOneServerPerSuite wi
           """
         )
 
-        val calculationRequest: CalculationRequest = CalculationRequest(scon = "S1234567T", nino = nino,
-          surname = "Smith", firstForename = "Bill",
-          1, None, Some(1))
+        val calculationRequest: CalculationRequest =
+          CalculationRequest(scon = "S1234567T", nino = nino, surname = "Smith", firstForename = "Bill", 1, None, Some(1))
         requestBuilderExecute[CalculationResponse](Future.successful(calcResponseJson.as[CalculationResponse]))
 
-        val result = TestGmpConnector.calculateSingle(calculationRequest, link)
+        val result       = TestGmpConnector.calculateSingle(calculationRequest, link)
         val calcResponse = await(result)
 
         calcResponse.calculationPeriods.length must be(1)
@@ -127,11 +126,11 @@ class GmpConnectorSpec extends HttpClientV2Helper with GuiceOneServerPerSuite wi
           """
         )
 
-        val calculationRequest: CalculationRequest = CalculationRequest(scon = "S1401234Z", nino = "CB433298A", surname = "Smith", firstForename = "Bill",
-          1, None, Some(1))
+        val calculationRequest: CalculationRequest =
+          CalculationRequest(scon = "S1401234Z", nino = "CB433298A", surname = "Smith", firstForename = "Bill", 1, None, Some(1))
         requestBuilderExecute[CalculationResponse](Future.successful(calcResponseJson.as[CalculationResponse]))
 
-        val result = TestGmpConnector.calculateSingle(calculationRequest, link)
+        val result       = TestGmpConnector.calculateSingle(calculationRequest, link)
         val calcResponse = await(result)
 
         calcResponse.calculationPeriods.length must be(1)
@@ -162,11 +161,11 @@ class GmpConnectorSpec extends HttpClientV2Helper with GuiceOneServerPerSuite wi
           """
         )
 
-        val calculationRequest: CalculationRequest = CalculationRequest(scon = "S1234567T", nino = nino, surname = "Smith", firstForename = "Bill",
-          1, None, Some(1))
+        val calculationRequest: CalculationRequest =
+          CalculationRequest(scon = "S1234567T", nino = nino, surname = "Smith", firstForename = "Bill", 1, None, Some(1))
         requestBuilderExecute[CalculationResponse](Future.successful(calcResponseJson.as[CalculationResponse]))
 
-        val result = TestGmpConnector.calculateSingle(calculationRequest, link)
+        val result       = TestGmpConnector.calculateSingle(calculationRequest, link)
         val calcResponse = await(result)
 
         calcResponse.calculationPeriods.length must be(1)
@@ -184,7 +183,6 @@ class GmpConnectorSpec extends HttpClientV2Helper with GuiceOneServerPerSuite wi
                                          "calctype":1
 
                                       }"""
-
 
         requestBuilderExecute[CalculationResponse](Future.failed(UpstreamErrorResponse("Scon not found", 500, 500)))
 
@@ -218,7 +216,7 @@ class GmpConnectorSpec extends HttpClientV2Helper with GuiceOneServerPerSuite wi
         val validateSconRequest: ValidateSconRequest = ValidateSconRequest(scon = "S1401234Z")
         requestBuilderExecute[ValidateSconResponse](Future.successful(validateSconResponseJson.as[ValidateSconResponse]))
 
-        val result = TestGmpConnector.validateScon(validateSconRequest, link)
+        val result               = TestGmpConnector.validateScon(validateSconRequest, link)
         val validateSconResponse = await(result)
 
         validateSconResponse.sconExists must be(false)
@@ -245,7 +243,7 @@ class GmpConnectorSpec extends HttpClientV2Helper with GuiceOneServerPerSuite wi
         val validateSconRequest: ValidateSconRequest = ValidateSconRequest(scon = "S1401234Z")
         requestBuilderExecute[ValidateSconResponse](Future.successful(validateSconResponseJson.as[ValidateSconResponse]))
 
-        val result = TestGmpConnector.validateScon(validateSconRequest, link)
+        val result               = TestGmpConnector.validateScon(validateSconRequest, link)
         val validateSconResponse = await(result)
 
         validateSconResponse.sconExists must be(false)
@@ -285,11 +283,11 @@ class GmpConnectorSpec extends HttpClientV2Helper with GuiceOneServerPerSuite wi
           """
         )
 
-        val calculationRequest: CalculationRequest = CalculationRequest(scon = "S1401234Z", nino = nino, surname = "Smith", firstForename = "Bill",
-          1, None, Some(1), dualCalc = Some(1))
+        val calculationRequest: CalculationRequest =
+          CalculationRequest(scon = "S1401234Z", nino = nino, surname = "Smith", firstForename = "Bill", 1, None, Some(1), dualCalc = Some(1))
         requestBuilderExecute[CalculationResponse](Future.successful(calcResponseJson.as[CalculationResponse]))
 
-        val result = TestGmpConnector.calculateSingle(calculationRequest, link)
+        val result       = TestGmpConnector.calculateSingle(calculationRequest, link)
         val calcResponse = await(result)
 
         calcResponse.dualCalc must be(true)

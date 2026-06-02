@@ -23,16 +23,28 @@ import java.time.LocalDate
 
 trait Mappings {
   protected def gmpDate(
-                         maximumDateInclusive: Option[LocalDate],
-                         minimumDateInclusive: Option[LocalDate],
-                         dayKey: String,
-                         monthKey: String,
-                         yearKey: String,
-                         dateKey: String,
-                         tooRecentArgs: Seq[String] = Seq.empty,
-                         tooFarInPastArgs: Seq[String] = Seq.empty,
-                         onlyRequiredIf: Option[Map[String, String] => Boolean] = None): FieldMapping[GmpDate] =
+    maximumDateInclusive: Option[LocalDate],
+    minimumDateInclusive: Option[LocalDate],
+    dayKey:               String,
+    monthKey:             String,
+    yearKey:              String,
+    dateKey:              String,
+    tooRecentArgs:        Seq[String] = Seq.empty,
+    tooFarInPastArgs:     Seq[String] = Seq.empty,
+    onlyRequiredIf:       Option[Map[String, String] => Boolean] = None
+  ): FieldMapping[GmpDate] =
 
-    of(using GMPDateFormatter(maximumDateInclusive, minimumDateInclusive, dayKey, monthKey, yearKey, dateKey, tooRecentArgs, tooFarInPastArgs, onlyRequiredIf))
+    of(using
+      GMPDateFormatter(
+        maximumDateInclusive,
+        minimumDateInclusive,
+        dayKey,
+        monthKey,
+        yearKey,
+        dateKey,
+        tooRecentArgs,
+        tooFarInPastArgs,
+        onlyRequiredIf
+      )
+    )
 }
-

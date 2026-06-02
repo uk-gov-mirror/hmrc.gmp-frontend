@@ -20,14 +20,14 @@ import config.{ApplicationConfig, GmpSessionCache}
 import controllers.auth.{AuthAction, FakeAuthAction}
 import metrics.ApplicationMetrics
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito._
+import org.mockito.Mockito.*
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.i18n.{Lang, MessagesApi, MessagesImpl}
 import play.api.mvc.MessagesControllerComponents
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import services.{GMPSessionService, SessionService}
 import uk.gov.hmrc.auth.core.AuthConnector
 
@@ -35,42 +35,46 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class SessionCacheControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar {
 
-  val mockAuthConnector = mock[AuthConnector]
+  val mockAuthConnector     = mock[AuthConnector]
   val mockGMPSessionService = mock[GMPSessionService]
-  val mockAuthAction = mock[AuthAction]
-  val metrics = app.injector.instanceOf[ApplicationMetrics]
-  implicit val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
-  implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
-  implicit val messagesAPI: MessagesApi = app.injector.instanceOf[MessagesApi]
-  implicit val messagesProvider: MessagesImpl = MessagesImpl(Lang("en"), messagesAPI)
-  implicit val ac: ApplicationConfig = app.injector.instanceOf[ApplicationConfig]
-  implicit val gmpSessionCache: GmpSessionCache = app.injector.instanceOf[GmpSessionCache]
+  val mockAuthAction        = mock[AuthAction]
+  val metrics               = app.injector.instanceOf[ApplicationMetrics]
+  implicit val mcc:              MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
+  implicit val ec:               ExecutionContext             = app.injector.instanceOf[ExecutionContext]
+  implicit val messagesAPI:      MessagesApi                  = app.injector.instanceOf[MessagesApi]
+  implicit val messagesProvider: MessagesImpl                 = MessagesImpl(Lang("en"), messagesAPI)
+  implicit val ac:               ApplicationConfig            = app.injector.instanceOf[ApplicationConfig]
+  implicit val gmpSessionCache:  GmpSessionCache              = app.injector.instanceOf[GmpSessionCache]
 
-  object TestSessionCacheController extends SessionCacheController(FakeAuthAction, mockAuthConnector,ac,mockGMPSessionService,FakeGmpContext,mcc,ec,gmpSessionCache) {
- /*   override val sessionService = mockGMPSessionService
+  object TestSessionCacheController
+      extends SessionCacheController(FakeAuthAction, mockAuthConnector, ac, mockGMPSessionService, FakeGmpContext, mcc, ec, gmpSessionCache) {
+    /*   override val sessionService = mockGMPSessionService
     override val context = FakeGmpContext
-*/  }
+     */
+  }
 
   "new-calculation" must {
 
     "reset the cached calculation parameters except for scon" in {
-        when(mockGMPSessionService.resetGmpSessionWithScon()(using any())).thenReturn(Future.successful(Some(new SessionService(metrics, gmpSessionCache).cleanSession)))
-        await(TestSessionCacheController.newCalculation(FakeRequest()))
-        verify(mockGMPSessionService, atLeastOnce()).resetGmpSessionWithScon()(using any())
+      when(mockGMPSessionService.resetGmpSessionWithScon()(using any()))
+        .thenReturn(Future.successful(Some(new SessionService(metrics, gmpSessionCache).cleanSession)))
+      await(TestSessionCacheController.newCalculation(FakeRequest()))
+      verify(mockGMPSessionService, atLeastOnce()).resetGmpSessionWithScon()(using any())
     }
 
     "redirect to the pension details page" in {
-        when(mockGMPSessionService.resetGmpSessionWithScon()(using any())).thenReturn(Future.successful(Some(new SessionService(metrics, gmpSessionCache).cleanSession)))
-        val result = TestSessionCacheController.newCalculation(FakeRequest())
-        status(result) must be(SEE_OTHER)
-        redirectLocation(result).get must be("/guaranteed-minimum-pension/pension-details")
+      when(mockGMPSessionService.resetGmpSessionWithScon()(using any()))
+        .thenReturn(Future.successful(Some(new SessionService(metrics, gmpSessionCache).cleanSession)))
+      val result = TestSessionCacheController.newCalculation(FakeRequest())
+      status(result)               must be(SEE_OTHER)
+      redirectLocation(result).get must be("/guaranteed-minimum-pension/pension-details")
     }
 
     "raise an error when the session service is unreachable" in {
 
-        when(mockGMPSessionService.resetGmpSessionWithScon()(using any())).thenReturn(Future.successful(None))
-        intercept[RuntimeException]{
-          await(TestSessionCacheController.newCalculation(FakeRequest()))
+      when(mockGMPSessionService.resetGmpSessionWithScon()(using any())).thenReturn(Future.successful(None))
+      intercept[RuntimeException] {
+        await(TestSessionCacheController.newCalculation(FakeRequest()))
       }
     }
   }
@@ -79,24 +83,26 @@ class SessionCacheControllerSpec extends PlaySpec with GuiceOneServerPerSuite wi
 
     "reset the cached calculation parameters" in {
 
-        when(mockGMPSessionService.resetGmpBulkSession()(using any())).thenReturn(Future.successful(Some(new SessionService(metrics, gmpSessionCache).cleanBulkSession)))
-        await(TestSessionCacheController.newBulkCalculation(FakeRequest()))
-        verify(mockGMPSessionService, atLeastOnce()).resetGmpBulkSession()(using any())
+      when(mockGMPSessionService.resetGmpBulkSession()(using any()))
+        .thenReturn(Future.successful(Some(new SessionService(metrics, gmpSessionCache).cleanBulkSession)))
+      await(TestSessionCacheController.newBulkCalculation(FakeRequest()))
+      verify(mockGMPSessionService, atLeastOnce()).resetGmpBulkSession()(using any())
     }
 
     "redirect to the upload csv page" in {
 
-        when(mockGMPSessionService.resetGmpBulkSession()(using any())).thenReturn(Future.successful(Some(new SessionService(metrics, gmpSessionCache).cleanBulkSession)))
-        val result = TestSessionCacheController.newBulkCalculation(FakeRequest())
-        status(result) must be(SEE_OTHER)
-        redirectLocation(result).get must be("/guaranteed-minimum-pension/upload-csv")
+      when(mockGMPSessionService.resetGmpBulkSession()(using any()))
+        .thenReturn(Future.successful(Some(new SessionService(metrics, gmpSessionCache).cleanBulkSession)))
+      val result = TestSessionCacheController.newBulkCalculation(FakeRequest())
+      status(result)               must be(SEE_OTHER)
+      redirectLocation(result).get must be("/guaranteed-minimum-pension/upload-csv")
     }
 
     "raise an error when the session service is unreachable" in {
 
-        when(mockGMPSessionService.resetGmpBulkSession()(using any())).thenReturn(Future.successful(None))
-        intercept[RuntimeException]{
-          await(TestSessionCacheController.newBulkCalculation(FakeRequest()))
+      when(mockGMPSessionService.resetGmpBulkSession()(using any())).thenReturn(Future.successful(None))
+      intercept[RuntimeException] {
+        await(TestSessionCacheController.newBulkCalculation(FakeRequest()))
       }
     }
   }

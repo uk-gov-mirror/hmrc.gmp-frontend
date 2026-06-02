@@ -21,43 +21,41 @@ import com.google.inject.Singleton
 import javax.inject.Inject
 import models.PensionDetailsScon
 import play.api.data.Form
-import play.api.data.Forms._
+import play.api.data.Forms.*
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationResult}
 import play.api.i18n.{Messages, MessagesImpl}
 import play.api.mvc.MessagesControllerComponents
 import validation.SconValidate
 
 @Singleton
-class PensionDetails_no_longer_used_Form @Inject()(mcc: MessagesControllerComponents) {
+class PensionDetails_no_longer_used_Form @Inject() (mcc: MessagesControllerComponents) {
   implicit lazy val messages: Messages = MessagesImpl(mcc.langs.availables.head, mcc.messagesApi)
 
   def strip(scon: String): String = scon.replaceAll(" ", "")
 
   def validateScon(s: String): ValidationResult = {
     val simpleFormat = "^\\w{1}\\d{7}\\w{1}$"
-    val stripped = strip(s)
-    if(stripped.nonEmpty && !stripped.matches(simpleFormat)) {
+    val stripped     = strip(s)
+    if stripped.nonEmpty && !stripped.matches(simpleFormat) then {
       Invalid("error.invalid")
-    } else if (stripped.nonEmpty && !SconValidate.isValid(stripped)) {
+    } else if stripped.nonEmpty && !SconValidate.isValid(stripped) then {
       Invalid("error.notRecognised")
     } else {
       Valid
     }
   }
-  val validScon: Constraint[String] = Constraint(validateScon)
+  val validScon:          Constraint[String]       = Constraint(validateScon)
   def pensionDetailsForm: Form[PensionDetailsScon] = Form(
     mapping(
-      "scon" -> nonEmptyText.transform[String](_.trim.toUpperCase, identity)
+      "scon" -> nonEmptyText
+        .transform[String](_.trim.toUpperCase, identity)
         .verifying(validScon)
     )(customApply)(customUnapply)
   )
 
-  def customUnapply (req:PensionDetailsScon): Some[String] = {
+  def customUnapply(req: PensionDetailsScon): Some[String] =
     Some(strip(req.scon))
-  }
 
-  def customApply(scon: String): PensionDetailsScon = {
+  def customApply(scon: String): PensionDetailsScon =
     new PensionDetailsScon(strip(scon))
-  }
 }
-

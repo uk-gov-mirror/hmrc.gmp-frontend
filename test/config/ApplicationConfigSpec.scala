@@ -19,11 +19,9 @@ package config
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 
-
-class ApplicationConfigSpec extends PlaySpec with GuiceOneServerPerSuite{
+class ApplicationConfigSpec extends PlaySpec with GuiceOneServerPerSuite {
 
   implicit val ac: ApplicationConfig = app.injector.instanceOf[ApplicationConfig]
-
 
   "Application Config" must {
     "load errors properties file" in {

@@ -17,32 +17,32 @@
 package services
 
 import config.ApplicationConfig
-import models._
-import models.upscan._
-import org.mockito.Mockito._
+import models.*
+import models.upscan.*
+import org.mockito.Mockito.*
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 import scala.concurrent.{Await, ExecutionContext, Future}
 
 class GMPSessionServiceSpec extends PlaySpec with ScalaFutures with MockitoSugar {
 
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
 
-  val mockGmpBulkSessionService = mock[GMPBulkSessionService]
+  val mockGmpBulkSessionService           = mock[GMPBulkSessionService]
   val mockSingleCalculationSessionService = mock[SingleCalculationSessionService]
-  val mockSessionService = mock[SessionService]
-  val mockAppConfig = mock[ApplicationConfig]
+  val mockSessionService                  = mock[SessionService]
+  val mockAppConfig                       = mock[ApplicationConfig]
 
-  val memberDetails = MemberDetails("AB123456C", "John", "Johnson")
-  val scon = "S3123456A"
-  val gmpSession = GmpSession(memberDetails, scon, CalculationType.DOL, None, None, Leaving(GmpDate(None, None, None), None), None)
-  val gmpBulkSession = GmpBulkSession(Some(UploadedSuccessfully("ref1", "file1", "download1")), Some("email@example.com"), Some("reference"))
-  val uploadStatus = UploadedSuccessfully("ref1", "file1", "download1")
-  val leavingDetails = Leaving(GmpDate(Some("2024"), Some("10"), Some("31")), Some("No"))
+  val memberDetails   = MemberDetails("AB123456C", "John", "Johnson")
+  val scon            = "S3123456A"
+  val gmpSession      = GmpSession(memberDetails, scon, CalculationType.DOL, None, None, Leaving(GmpDate(None, None, None), None), None)
+  val gmpBulkSession  = GmpBulkSession(Some(UploadedSuccessfully("ref1", "file1", "download1")), Some("email@example.com"), Some("reference"))
+  val uploadStatus    = UploadedSuccessfully("ref1", "file1", "download1")
+  val leavingDetails  = Leaving(GmpDate(Some("2024"), Some("10"), Some("31")), Some("No"))
   val revaluationDate = Some(GmpDate(Some("2024"), Some("10"), Some("31")))
   val revaluationRate = "rateType"
 
@@ -117,8 +117,8 @@ class GMPSessionServiceSpec extends PlaySpec with ScalaFutures with MockitoSugar
 
     "cacheEmailAndReference" should {
       "cache email and reference using gmpBulkSessionService if MongoDB cache is enabled" in {
-        val service = createGmpSessionService
-        val email = Some("email@example.com")
+        val service   = createGmpSessionService
+        val email     = Some("email@example.com")
         val reference = Some("reference")
 
         when(mockAppConfig.isMongoDBCacheEnabled).thenReturn(true)
@@ -129,8 +129,8 @@ class GMPSessionServiceSpec extends PlaySpec with ScalaFutures with MockitoSugar
       }
 
       "cache email and reference using sessionService if MongoDB cache is disabled" in {
-        val service = createGmpSessionService
-        val email = Some("email@example.com")
+        val service   = createGmpSessionService
+        val email     = Some("email@example.com")
         val reference = Some("reference")
 
         when(mockAppConfig.isMongoDBCacheEnabled).thenReturn(false)
@@ -245,7 +245,7 @@ class GMPSessionServiceSpec extends PlaySpec with ScalaFutures with MockitoSugar
 
     "cachePensionDetails" should {
       "cache pension details using singleCalculationSessionService if MongoDB cache is enabled" in {
-        val service = createGmpSessionService
+        val service     = createGmpSessionService
         val pensionScon = "S123456A"
 
         when(mockAppConfig.isMongoDBCacheEnabled).thenReturn(true)
@@ -256,7 +256,7 @@ class GMPSessionServiceSpec extends PlaySpec with ScalaFutures with MockitoSugar
       }
 
       "cache pension details using sessionService if MongoDB cache is disabled" in {
-        val service = createGmpSessionService
+        val service     = createGmpSessionService
         val pensionScon = "S123456A"
 
         when(mockAppConfig.isMongoDBCacheEnabled).thenReturn(false)
@@ -291,7 +291,7 @@ class GMPSessionServiceSpec extends PlaySpec with ScalaFutures with MockitoSugar
 
     "cacheScenario" should {
       "cache scenario using singleCalculationSessionService if MongoDB cache is enabled" in {
-        val service = createGmpSessionService
+        val service  = createGmpSessionService
         val scenario = "Scenario1"
 
         when(mockAppConfig.isMongoDBCacheEnabled).thenReturn(true)
@@ -302,7 +302,7 @@ class GMPSessionServiceSpec extends PlaySpec with ScalaFutures with MockitoSugar
       }
 
       "cache scenario using sessionService if MongoDB cache is disabled" in {
-        val service = createGmpSessionService
+        val service  = createGmpSessionService
         val scenario = "Scenario1"
 
         when(mockAppConfig.isMongoDBCacheEnabled).thenReturn(false)

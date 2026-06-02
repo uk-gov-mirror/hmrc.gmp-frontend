@@ -22,19 +22,17 @@ trait BulkEntityProcessing[E] extends EntityCharProcessing[E] {
 
 class BulkEntityProcessor[E] extends BulkEntityProcessing[E] {
   private def caterForMissingTrailingDeliminator(convertToEntity: String => E)(processingResult: EntityContainer[E]): List[E] =
-    if(processingResult.partialEntityData.nonEmpty) {
+    if processingResult.partialEntityData.nonEmpty then {
       processingResult.constructedEntities :+ convertToEntity(processingResult.partialEntityData)
-    }
-    else {
+    } else {
       processingResult.constructedEntities
     }
 
   def list(source: => Iterator[Char], deliminator: Char, convertToEntity: String => E): List[E] = {
     val streamDataToEntities = processEntityData[E](deliminator, convertToEntity)
-    val tidyProcessedData = caterForMissingTrailingDeliminator(convertToEntity)
-    val processedInputData = source.foldLeft(EntityContainer[E]("", List[E]()))((entityContainer, streamCharacter) => {
-      streamDataToEntities(entityContainer, streamCharacter)
-    })
+    val tidyProcessedData    = caterForMissingTrailingDeliminator(convertToEntity)
+    val processedInputData   =
+      source.foldLeft(EntityContainer[E]("", List[E]()))((entityContainer, streamCharacter) => streamDataToEntities(entityContainer, streamCharacter))
     tidyProcessedData(processedInputData)
   }
 }
@@ -42,13 +40,13 @@ case class EntityContainer[T](partialEntityData: String, constructedEntities: Li
 
 trait EntityCharProcessing[T] {
   def processEntityData[E](deliminator: Char, convertToEntity: String => E)(entityContainer: EntityContainer[E], input: Char): EntityContainer[E] = {
-    val entities: List[E] = if (input != deliminator) {
+    val entities: List[E] = if input != deliminator then {
       entityContainer.constructedEntities
     } else {
       val entityDataChars = entityContainer.partialEntityData.toString
       entityContainer.constructedEntities :+ convertToEntity(entityDataChars)
     }
-    val entityCharacters: String = if (input != deliminator) {
+    val entityCharacters: String = if input != deliminator then {
       entityContainer.partialEntityData.concat(input.toString)
     } else {
       ""

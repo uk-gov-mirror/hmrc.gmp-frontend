@@ -24,7 +24,7 @@ import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.i18n.{Lang, Messages, MessagesApi, MessagesImpl}
 import play.api.mvc.MessagesControllerComponents
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import services.GMPSessionService
 import uk.gov.hmrc.auth.core.AuthConnector
 import views.Views
@@ -33,17 +33,18 @@ import scala.concurrent.ExecutionContext
 
 class IncorrectlyEncodedControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar {
 
-  val mockAuthConnector = mock[AuthConnector]
+  val mockAuthConnector     = mock[AuthConnector]
   val mockGMPSessionService = mock[GMPSessionService]
 
-  implicit val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
-  implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
-  implicit val messagesAPI: MessagesApi = app.injector.instanceOf[MessagesApi]
-  implicit val messagesProvider: MessagesImpl = MessagesImpl(Lang("en"), messagesAPI)
-  implicit val ac: ApplicationConfig = app.injector.instanceOf[ApplicationConfig]
+  implicit val mcc:              MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
+  implicit val ec:               ExecutionContext             = app.injector.instanceOf[ExecutionContext]
+  implicit val messagesAPI:      MessagesApi                  = app.injector.instanceOf[MessagesApi]
+  implicit val messagesProvider: MessagesImpl                 = MessagesImpl(Lang("en"), messagesAPI)
+  implicit val ac:               ApplicationConfig            = app.injector.instanceOf[ApplicationConfig]
   lazy val views = app.injector.instanceOf[Views]
 
-  object TestIncorrectlyEncodedController extends IncorrectlyEncodedController(FakeAuthAction,mockAuthConnector,mockGMPSessionService,FakeGmpContext,mcc,ac,ec,views)
+  object TestIncorrectlyEncodedController
+      extends IncorrectlyEncodedController(FakeAuthAction, mockAuthConnector, mockGMPSessionService, FakeGmpContext, mcc, ac, ec, views)
 
   "IncorrectlyEncodedController.get" should {
 
@@ -53,7 +54,7 @@ class IncorrectlyEncodedControllerSpec extends PlaySpec with GuiceOneServerPerSu
 
       status(result) mustBe INTERNAL_SERVER_ERROR
 
-      contentAsString(result) must include (Messages("gmp.bulk.incorrectlyEncoded.header"))
+      contentAsString(result) must include(Messages("gmp.bulk.incorrectlyEncoded.header"))
     }
   }
 }

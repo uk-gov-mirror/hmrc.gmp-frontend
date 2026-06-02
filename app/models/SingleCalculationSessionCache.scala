@@ -17,7 +17,7 @@
 package models
 
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json._
+import play.api.libs.json.*
 import services.Encryption
 import uk.gov.hmrc.crypto.EncryptedValue
 import uk.gov.hmrc.crypto.json.CryptoFormats
@@ -25,31 +25,30 @@ import uk.gov.hmrc.crypto.json.CryptoFormats
 import java.time.Instant
 
 case class SingleCalculationSessionCache(
-                                          id: String,
-                                          gmpSession: GmpSession,
-                                          lastModified: Instant = Instant.now()
-                                        )
+  id:           String,
+  gmpSession:   GmpSession,
+  lastModified: Instant = Instant.now()
+)
 
 object SingleCalculationSessionCache {
   object MongoFormats {
-    import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats.Implicits._
+    import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats.Implicits.*
     implicit val cryptEncryptedValueFormats: Format[EncryptedValue] = CryptoFormats.encryptedValueFormat
 
-    def reads(implicit encryption: Encryption): Reads[SingleCalculationSessionCache] = {
+    def reads(implicit encryption: Encryption): Reads[SingleCalculationSessionCache] =
       (
         (__ \ "id").read[String] and
           (__ \ "gmpSession").read[EncryptedValue] and
           (__ \ "lastModified").read[Instant]
-        )(ModelEncryption.decryptSingleCalculationSessionCache)
-    }
+      )(ModelEncryption.decryptSingleCalculationSessionCache)
 
     def writes(implicit encryption: Encryption): OWrites[SingleCalculationSessionCache] = new OWrites[SingleCalculationSessionCache] {
       override def writes(singleCalculationSessionCache: SingleCalculationSessionCache): JsObject = {
         val encryptedValues: (String, EncryptedValue, Instant) =
           ModelEncryption.encryptSingleCalculationSessionCache(singleCalculationSessionCache)
         Json.obj(
-          "id" -> encryptedValues._1,
-          "gmpSession" -> encryptedValues._2,
+          "id"           -> encryptedValues._1,
+          "gmpSession"   -> encryptedValues._2,
           "lastModified" -> encryptedValues._3
         )
       }

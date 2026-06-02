@@ -24,15 +24,16 @@ import play.api.mvc.Request
 import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.Future
 
-class UpscanService @Inject()(
-                               applicationConfig: ApplicationConfig,
-                               upscanConnector: UpscanConnector
-                             ) {
+class UpscanService @Inject() (
+  applicationConfig: ApplicationConfig,
+  upscanConnector:   UpscanConnector
+) {
 
   lazy val redirectUrlBase: String = applicationConfig.upscanRedirectBase
 
   def getUpscanFormData()(implicit hc: HeaderCarrier, request: Request[?]): Future[UpscanInitiateResponse] = {
-    val callback = controllers.routes.FileUploadController.callback(hc.sessionId.get.value)
+    val callback = controllers.routes.FileUploadController
+      .callback(hc.sessionId.get.value)
       .absoluteURL(applicationConfig.upscanProtocol == "https")
 
     val success = s"$redirectUrlBase/guaranteed-minimum-pension/upload-csv/success"

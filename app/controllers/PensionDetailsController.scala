@@ -32,61 +32,60 @@ import views.Views
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class PensionDetailsController @Inject()(authAction: AuthAction,
-                                         override val authConnector: AuthConnector,
-                                         gmpConnector: GmpConnector,
-                                         GMPSessionService: GMPSessionService,
-                                         implicit val config:GmpContext,
-                                         metrics: ApplicationMetrics,
-                                         ac:ApplicationConfig,
-                                         pdf:PensionDetails_no_longer_used_Form,
-                                         override val messagesControllerComponents: MessagesControllerComponents,
-                                         implicit val executionContext: ExecutionContext,
-                                         implicit val gmpSessionCache: GmpSessionCache,
-                                         views: Views) extends GmpPageFlow(authConnector,GMPSessionService,config,messagesControllerComponents,ac) with Logging {
+class PensionDetailsController @Inject() (
+  authAction:                                AuthAction,
+  override val authConnector:                AuthConnector,
+  gmpConnector:                              GmpConnector,
+  GMPSessionService:                         GMPSessionService,
+  implicit val config:                       GmpContext,
+  metrics:                                   ApplicationMetrics,
+  ac:                                        ApplicationConfig,
+  pdf:                                       PensionDetails_no_longer_used_Form,
+  override val messagesControllerComponents: MessagesControllerComponents,
+  implicit val executionContext:             ExecutionContext,
+  implicit val gmpSessionCache:              GmpSessionCache,
+  views:                                     Views
+) extends GmpPageFlow(authConnector, GMPSessionService, config, messagesControllerComponents, ac)
+    with Logging {
 
-  lazy val pensionDetailsForm=pdf.pensionDetailsForm
+  lazy val pensionDetailsForm = pdf.pensionDetailsForm
 
-  def get = authAction.async {
-      implicit request => {
-        GMPSessionService.fetchPensionDetails().map {
-          case Some(scon) => Ok(views.pensionDetails(pensionDetailsForm.fill(PensionDetailsScon(scon))))
-          case _ => Ok(views.pensionDetails(pensionDetailsForm))
-        }
-      }
+  def get = authAction.async { implicit request =>
+    GMPSessionService.fetchPensionDetails().map {
+      case Some(scon) => Ok(views.pensionDetails(pensionDetailsForm.fill(PensionDetailsScon(scon))))
+      case _          => Ok(views.pensionDetails(pensionDetailsForm))
+    }
   }
 
-  def post = authAction.async {
-      implicit request => {
-        val link = request.linkId
-        logger.debug(s"[PensionDetailsController][post][POST] : ${request.body}")
+  def post = authAction.async { implicit request =>
+    val link = request.linkId
+    logger.debug(s"[PensionDetailsController][post][POST] : ${request.body}")
 
-        pensionDetailsForm.bindFromRequest().fold(
-          formWithErrors => {
-            Future.successful(BadRequest(views.pensionDetails(formWithErrors)))
-          },
-          pensionDetails => {
+    pensionDetailsForm
+      .bindFromRequest()
+      .fold(
+        formWithErrors => Future.successful(BadRequest(views.pensionDetails(formWithErrors))),
+        pensionDetails => {
 
-            val validateSconRequest = ValidateSconRequest(pensionDetails.scon)
+          val validateSconRequest = ValidateSconRequest(pensionDetails.scon)
 
-            gmpConnector.validateScon(validateSconRequest, link) flatMap {
-              response => {
-                if (response.sconExists) {
-                  GMPSessionService.cachePensionDetails(pensionDetails.scon).map {
-                    case Some(session) => nextPage("PensionDetailsController", session)
-                    case _ => throw new RuntimeException
-                  }
-                }
-                else {
-                  metrics.countNpsSconInvalid()
-                  Future.successful(BadRequest(views.pensionDetails(pensionDetailsForm.fill(
-                    PensionDetailsScon(pensionDetails.scon)).withError("scon", "error.notRecognised"))))
-                }
-
+          gmpConnector.validateScon(validateSconRequest, link) flatMap { response =>
+            if response.sconExists then {
+              GMPSessionService.cachePensionDetails(pensionDetails.scon).map {
+                case Some(session) => nextPage("PensionDetailsController", session)
+                case _             => throw new RuntimeException
               }
+            } else {
+              metrics.countNpsSconInvalid()
+              Future.successful(
+                BadRequest(
+                  views.pensionDetails(pensionDetailsForm.fill(PensionDetailsScon(pensionDetails.scon)).withError("scon", "error.notRecognised"))
+                )
+              )
             }
+
           }
-        )
-      }
+        }
+      )
   }
 }

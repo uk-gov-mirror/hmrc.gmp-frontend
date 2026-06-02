@@ -23,42 +23,37 @@ import java.time.format.DateTimeFormatter
 
 case class GmpDate(day: Option[String], month: Option[String], year: Option[String]) {
 
-  def getAsLocalDate: Option[LocalDate] = {
+  def getAsLocalDate: Option[LocalDate] =
     (year, month, day) match {
       case (Some(y), Some(m), Some(d)) => Some(LocalDate.of(y.toInt, m.toInt, d.toInt))
-      case _ => None
+      case _                           => None
     }
-  }
 
-  def isOnOrAfter06042016: Boolean = {
-    getAsLocalDate.exists(date => {
+  def isOnOrAfter06042016: Boolean =
+    getAsLocalDate.exists { date =>
       val thatDate = LocalDate.of(2016, 4, 6)
       date.isAfter(thatDate) || date.isEqual(thatDate)
-    })
-  }
+    }
 
-  def isOnOrAfter05041978: Boolean = {
-    getAsLocalDate.exists(date => {
+  def isOnOrAfter05041978: Boolean =
+    getAsLocalDate.exists { date =>
       val thatDate = LocalDate.of(1978, 4, 5)
       date.isAfter(thatDate) || date.isEqual(thatDate)
-    })
-  }
+    }
 
   def isBefore05042046: Boolean = getAsLocalDate.exists(_.isBefore(LocalDate.of(2046, 4, 5)))
 
-  def getAsText: String = {
+  def getAsText: String =
     getAsLocalDate match {
-      case Some(date) => date.format( DateTimeFormatter.ofPattern("dd MMMM yyyy"))
-      case _ => ""
+      case Some(date) => date.format(DateTimeFormatter.ofPattern("dd MMMM yyyy"))
+      case _          => ""
     }
-  }
 
-  def isBefore(otherDate: GmpDate): Boolean = {
+  def isBefore(otherDate: GmpDate): Boolean =
     (getAsLocalDate, otherDate.getAsLocalDate) match {
       case (Some(date), Some(otherDate)) => date.isBefore(otherDate)
-      case _ => false
+      case _                             => false
     }
-  }
 }
 
 object GmpDate {

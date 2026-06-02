@@ -19,17 +19,21 @@ package forms
 import com.google.inject.{Inject, Singleton}
 import models.RevaluationRate
 import play.api.data.Form
-import play.api.data.Forms._
+import play.api.data.Forms.*
 import play.api.i18n.{Messages, MessagesImpl}
 import play.api.mvc.MessagesControllerComponents
 @Singleton
-class RevaluationRateForm @Inject()(mcc: MessagesControllerComponents) {
+class RevaluationRateForm @Inject() (mcc: MessagesControllerComponents) {
   implicit lazy val messages: Messages = MessagesImpl(mcc.langs.availables.head, mcc.messagesApi)
 
   val revaluationRateForm = Form(
     mapping(
-      "rateType" -> optional(text).verifying(messages("gmp.error.revaluation.rate.error"), { x => x.isDefined &&
-        List(RevaluationRate.FIXED, RevaluationRate.HMRC, RevaluationRate.LIMITED, RevaluationRate.S148).contains(x.get) })
+      "rateType" -> optional(text).verifying(
+        messages("gmp.error.revaluation.rate.error"),
+        x =>
+          x.isDefined &&
+            List(RevaluationRate.FIXED, RevaluationRate.HMRC, RevaluationRate.LIMITED, RevaluationRate.S148).contains(x.get)
+      )
     )(RevaluationRate.apply)((rr: RevaluationRate) => Some(rr.rateType))
   )
 

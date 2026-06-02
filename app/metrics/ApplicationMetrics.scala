@@ -19,12 +19,12 @@ package metrics
 import com.codahale.metrics.MetricRegistry
 import com.google.inject.Inject
 
-class ApplicationMetrics @Inject()(
-                                  registry: MetricRegistry
-                                  ) {
-  val keystoreStoreTimer = registry.timer("gmp-keystore-storage-timer")
-  val keystoreRetrieveTimer = registry.timer("gmp-keystore-retrieve-timer")
-  val gmpConnectorTimer = registry.timer("gmp-connector-timer")
+class ApplicationMetrics @Inject() (
+  registry: MetricRegistry
+) {
+  val keystoreStoreTimer          = registry.timer("gmp-keystore-storage-timer")
+  val keystoreRetrieveTimer       = registry.timer("gmp-keystore-retrieve-timer")
+  val gmpConnectorTimer           = registry.timer("gmp-connector-timer")
   def countNpsError(code: String) = registry.counter(s"gmp-npserror-$code").inc()
-  def countNpsSconInvalid() = registry.counter(s"gmp-npssconinvalid").inc()
+  def countNpsSconInvalid()       = registry.counter(s"gmp-npssconinvalid").inc()
 }

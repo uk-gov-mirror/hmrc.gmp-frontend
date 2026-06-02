@@ -20,26 +20,27 @@ import forms.DateOfLeavingForm
 import models.CalculationType
 import play.api.mvc.MessagesControllerComponents
 import play.twirl.api.Html
-import uk.gov.hmrc.govukfrontend.views.html.components._
+import uk.gov.hmrc.govukfrontend.views.html.components.*
 import utils.GmpViewSpec
 import views.ViewHelpers
 
-abstract class DateOfLeavingSpec extends GmpViewSpec  {
-  lazy val layout = app.injector.instanceOf[views.html.Layout]
-  lazy val viewHelpers = app.injector.instanceOf[ViewHelpers]
-  lazy val radios = app.injector.instanceOf[GovukRadios]
-  lazy val govButton = app.injector.instanceOf[GovukButton]
+abstract class DateOfLeavingSpec extends GmpViewSpec {
+  lazy val layout       = app.injector.instanceOf[views.html.Layout]
+  lazy val viewHelpers  = app.injector.instanceOf[ViewHelpers]
+  lazy val radios       = app.injector.instanceOf[GovukRadios]
+  lazy val govButton    = app.injector.instanceOf[GovukButton]
   lazy val govDateInput = app.injector.instanceOf[GovukDateInput]
-  lazy val govErrorMsg = app.injector.instanceOf[GovukErrorMessage]
+  lazy val govErrorMsg  = app.injector.instanceOf[GovukErrorMessage]
   lazy val govUkSummary = app.injector.instanceOf[GovukErrorSummary]
-  lazy val govUkBack = app.injector.instanceOf[GovukBackLink]
+  lazy val govUkBack    = app.injector.instanceOf[GovukBackLink]
 
-  override def view: Html = new views.html.dateofleaving(layout, viewHelpers, radios, govButton, govDateInput, govErrorMsg, govUkSummary, govUkBack)(dateOfLeavingForm, scenario)
+  override def view: Html = new views.html.dateofleaving(layout, viewHelpers, radios, govButton, govDateInput, govErrorMsg, govUkSummary, govUkBack)(
+    dateOfLeavingForm,
+    scenario
+  )
   val mcc = app.injector.instanceOf[MessagesControllerComponents]
 
   val dateOfLeavingForm = new DateOfLeavingForm(mcc).dateOfLeavingForm()
-
-
 
   // val dateOfLeavingForm: Form[models.Leaving] = DateOfLeavingFo.dateOfLeavingForm
   val scenario = CalculationType.DOL

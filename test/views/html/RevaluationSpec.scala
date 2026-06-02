@@ -25,8 +25,8 @@ import play.twirl.api.Html
 import utils.GmpViewSpec
 import views.ViewHelpers
 
-class RevaluationSpec extends GmpViewSpec{
-  lazy val layout = app.injector.instanceOf[views.html.Layout]
+class RevaluationSpec extends GmpViewSpec {
+  lazy val layout      = app.injector.instanceOf[views.html.Layout]
   lazy val viewHelpers = app.injector.instanceOf[ViewHelpers]
 
   override def view: Html = new views.html.revaluation(layout, viewHelpers)(revaluationForm)
@@ -34,57 +34,51 @@ class RevaluationSpec extends GmpViewSpec{
 
   val YEAR_FIELD_LENGTH: Int = 4
 
-  def mandatoryDate(date: GmpDate): Boolean = {
+  def mandatoryDate(date: GmpDate): Boolean =
     date.day.isDefined || date.month.isDefined || date.year.isDefined
+
+  val revaluationDateConstraint: Constraint[RevaluationDate] = Constraint("revaluationDate") { revaluationDate =>
+    val errors =
+      if revaluationDate.leaving.leaving.isDefined &&
+        revaluationDate.leaving.leaving.get.equals(Leaving.NO) &&
+        !revaluationDate.revaluationDate.isOnOrAfter06042016
+      then {
+        Seq(ValidationError(messages("gmp.error.revaluation_pre2016_not_left"), "revaluationDate")) // 2016
+      } else if revaluationDate.revaluationDate.isBefore(revaluationDate.leaving.leavingDate) then {
+        Seq(ValidationError(messages("gmp.error.revaluation_before_leaving", revaluationDate.leaving.leavingDate.getAsText), "revaluationDate"))
+      } else {
+        Nil
+      }
+
+    if errors.isEmpty then {
+      Valid
+    } else {
+      Invalid(errors)
+    }
   }
 
-  val revaluationDateConstraint: Constraint[RevaluationDate] = Constraint("revaluationDate")({
-    revaluationDate => {
-      val errors =
-        if (revaluationDate.leaving.leaving.isDefined &&
-          revaluationDate.leaving.leaving.get.equals(Leaving.NO) &&
-          !revaluationDate.revaluationDate.isOnOrAfter06042016)
-        {
-          Seq(ValidationError(messages("gmp.error.revaluation_pre2016_not_left"), "revaluationDate")) // 2016
-        }
-        else if (revaluationDate.revaluationDate.isBefore(revaluationDate.leaving.leavingDate)) {
-          Seq(ValidationError(messages("gmp.error.revaluation_before_leaving", revaluationDate.leaving.leavingDate.getAsText), "revaluationDate"))
-        }
-        else {
-          Nil
-        }
-
-      if (errors.isEmpty) {
-        Valid
-      } else {
-        Invalid(errors)
-      }
-    }
-  })
-
   val revaluationDateMapping = mapping(
-    "day" -> optional(text),
+    "day"   -> optional(text),
     "month" -> optional(text),
-    "year" -> optional(text)
+    "year"  -> optional(text)
   )(GmpDate.apply)((gmpDate: GmpDate) => Some(gmpDate.day, gmpDate.month, gmpDate.year))
     .verifying(messages("gmp.error.reval_date.mandatory"), x => mandatoryDate(x))
     .verifying(messages("gmp.error.date.invalid"), x => checkValidDate(x))
     .verifying(messages("gmp.error.reval_date.from"), x => checkDateOnOrAfterGMPStart(x)) // 1978
-    .verifying(messages("gmp.error.reval_date.to"), x => checkDateOnOBeforeGMPEnd(x)
-    )
+    .verifying(messages("gmp.error.reval_date.to"), x => checkDateOnOBeforeGMPEnd(x))
 
   val leavingMapping = mapping(
     "leavingDate" -> mapping(
-      "day" -> optional(text),
+      "day"   -> optional(text),
       "month" -> optional(text),
-      "year" -> optional(text)
+      "year"  -> optional(text)
     )(GmpDate.apply)((gmpDate: GmpDate) => Some(gmpDate.day, gmpDate.month, gmpDate.year)),
     "leaving" -> optional(text)
   )(Leaving.apply)((le: Leaving) => Some(le.leavingDate, le.leaving))
 
   val revaluationForm = Form(
     mapping(
-      "leaving" -> leavingMapping,
+      "leaving"         -> leavingMapping,
       "revaluationDate" -> revaluationDateMapping
     )(RevaluationDate.apply)((revaluationDate: RevaluationDate) => Some(revaluationDate.leaving, revaluationDate.revaluationDate))
       .verifying(revaluationDateConstraint)

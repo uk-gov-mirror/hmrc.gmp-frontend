@@ -20,7 +20,7 @@ import java.net.URL
 import java.time.Instant
 
 import play.api.Logging
-import play.api.libs.json._
+import play.api.libs.json.*
 
 import scala.util.Try
 
@@ -29,21 +29,21 @@ sealed trait UpscanCallback {
 }
 
 case class UpscanReadyCallback(
-                                reference: String,
-                                fileStatus: String,
-                                downloadUrl: URL,
-                                uploadDetails: UploadDetails
-                              ) extends UpscanCallback
+  reference:     String,
+  fileStatus:    String,
+  downloadUrl:   URL,
+  uploadDetails: UploadDetails
+) extends UpscanCallback
 
 case class UpscanFailedCallback(
-                                 reference: String,
-                                 failureDetails: ErrorDetails
-                               ) extends UpscanCallback
+  reference:      String,
+  failureDetails: ErrorDetails
+) extends UpscanCallback
 
-object UpscanCallback extends Logging{
+object UpscanCallback extends Logging {
   implicit val uploadDetailsFormat: Format[UploadDetails] = Json.format[UploadDetails]
-  implicit val errorDetailsFormat: Format[ErrorDetails] = Json.format[ErrorDetails]
-  implicit val formatURL: Format[URL] = new Format[URL] {
+  implicit val errorDetailsFormat:  Format[ErrorDetails]  = Json.format[ErrorDetails]
+  implicit val formatURL:           Format[URL]           = new Format[URL] {
     override def reads(json: JsValue): JsResult[URL] = json match {
       case JsString(s) =>
         parseUrl(s).map(JsSuccess(_)).getOrElse(JsError(Seq(JsPath() -> Seq(JsonValidationError("error.expected.url")))))
@@ -64,8 +64,8 @@ object UpscanCallback extends Logging{
         logger.info("READY")
         implicitly[Reads[UpscanReadyCallback]].reads(json)
       case JsDefined(JsString("FAILED")) => implicitly[Reads[UpscanFailedCallback]].reads(json)
-      case JsDefined(value) => JsError(s"Invalid type discriminator: $value")
-      case other => JsError(s"Unexpected JsLookupResult: $other")
+      case JsDefined(value)              => JsError(s"Invalid type discriminator: $value")
+      case other                         => JsError(s"Unexpected JsLookupResult: $other")
     }
   }
 }
@@ -73,4 +73,3 @@ object UpscanCallback extends Logging{
 case class UploadDetails(uploadTimestamp: Instant, checksum: String, fileMimeType: String, fileName: String)
 
 case class ErrorDetails(failureReason: String, message: String)
-

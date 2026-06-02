@@ -20,7 +20,7 @@ import java.time.LocalDate
 import play.api.i18n.Messages
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.time.TaxYear
-import views.helpers.GmpDateFormatter._
+import views.helpers.GmpDateFormatter.*
 
 case class ContributionsAndEarnings(taxYear: Int, contEarnings: String)
 
@@ -28,18 +28,19 @@ object ContributionsAndEarnings {
   implicit val formats: OFormat[ContributionsAndEarnings] = Json.format[ContributionsAndEarnings]
 }
 
-case class CalculationPeriod(startDate: Option[LocalDate],
-                             endDate: LocalDate,
-                             gmpTotal: String,
-                             post88GMPTotal: String,
-                             revaluationRate: Int,
-                             errorCode: Int,
-                             revalued: Option[Int],
-                             dualCalcPost90TrueTotal: Option[String] = None,
-                             dualCalcPost90OppositeTotal: Option[String] = None,
-                             inflationProofBeyondDod: Option[Int] = None,
-                             contsAndEarnings: Option[List[ContributionsAndEarnings]] = None
-                              ){
+case class CalculationPeriod(
+  startDate:                   Option[LocalDate],
+  endDate:                     LocalDate,
+  gmpTotal:                    String,
+  post88GMPTotal:              String,
+  revaluationRate:             Int,
+  errorCode:                   Int,
+  revalued:                    Option[Int],
+  dualCalcPost90TrueTotal:     Option[String] = None,
+  dualCalcPost90OppositeTotal: Option[String] = None,
+  inflationProofBeyondDod:     Option[Int] = None,
+  contsAndEarnings:            Option[List[ContributionsAndEarnings]] = None
+) {
   def endTaxYear: Int = CalculationResponse.getTaxYear(Some(endDate))
 
   def startTaxYear: Int = CalculationResponse.getTaxYear(startDate)
@@ -51,77 +52,79 @@ object CalculationPeriod {
 }
 
 case class CalculationResponse(
-                                name: String,
-                                nino: String,
-                                scon: String,
-                                revaluationRate: Option[String],
-                                revaluationDate: Option[LocalDate],
-                                calculationPeriods: List[CalculationPeriod],
-                                globalErrorCode: Int,
-                                spaDate: Option[LocalDate],
-                                payableAgeDate: Option[LocalDate],
-                                dateOfDeath: Option[LocalDate],
-                                dualCalc: Boolean,
-                                calcType: Int) {
+  name:               String,
+  nino:               String,
+  scon:               String,
+  revaluationRate:    Option[String],
+  revaluationDate:    Option[LocalDate],
+  calculationPeriods: List[CalculationPeriod],
+  globalErrorCode:    Int,
+  spaDate:            Option[LocalDate],
+  payableAgeDate:     Option[LocalDate],
+  dateOfDeath:        Option[LocalDate],
+  dualCalc:           Boolean,
+  calcType:           Int
+) {
 
   def leavingDate: LocalDate = revaluationDate.getOrElse(calculationPeriods.head.endDate)
 
-  def hasErrors: Boolean = calculationPeriods.foldLeft(globalErrorCode){_ + _.errorCode} > 0
+  def hasErrors: Boolean = calculationPeriods.foldLeft(globalErrorCode)(_ + _.errorCode) > 0
 
-  def hasSuccessfulCalculations = globalErrorCode == 0 || calculationPeriods.count { p => p.errorCode == 0 } > 0
+  def hasSuccessfulCalculations = globalErrorCode == 0 || calculationPeriods.count(p => p.errorCode == 0) > 0
 
-  def revaluationUnsuccessful: Boolean = calculationPeriods.foldLeft(0){_ + _.revalued.getOrElse(0)} == calculationPeriods.length
+  def revaluationUnsuccessful: Boolean = calculationPeriods.foldLeft(0)(_ + _.revalued.getOrElse(0)) == calculationPeriods.length
 
-  def totalGmp: BigDecimal = calculationPeriods.foldLeft(BigDecimal(0)){ (sum, period) => sum + BigDecimal(period.gmpTotal)}
+  def totalGmp: BigDecimal = calculationPeriods.foldLeft(BigDecimal(0))((sum, period) => sum + BigDecimal(period.gmpTotal))
 
-  def post88Gmp: BigDecimal = calculationPeriods.foldLeft(BigDecimal(0)){ (sum, period) => sum + BigDecimal(period.post88GMPTotal)}
+  def post88Gmp: BigDecimal = calculationPeriods.foldLeft(BigDecimal(0))((sum, period) => sum + BigDecimal(period.post88GMPTotal))
 
-  def errorCodes: List[Int] = {
+  def errorCodes: List[Int] =
     hasErrors match {
       case false => List[Int]()
-      case true =>
+      case true  =>
         var errors = calculationPeriods
-            .filter(_.errorCode > 0)
-            .map(_.errorCode)
-        if (globalErrorCode > 0) {
+          .filter(_.errorCode > 0)
+          .map(_.errorCode)
+        if globalErrorCode > 0 then {
           errors = errors :+ globalErrorCode
         }
 
         errors
     }
-  }
 
   def numPeriodsInError: Int = calculationPeriods.count(_.errorCode > 0)
 
-  def trueCalculation: BigDecimal = calculationPeriods.foldLeft(BigDecimal(0)){ (sum, period) => sum +
-    BigDecimal(period.dualCalcPost90TrueTotal.getOrElse("0.00"))}
-
-  def oppositeCalculation: BigDecimal = calculationPeriods.foldLeft(BigDecimal(0)){ (sum, period) => sum +
-    BigDecimal(period.dualCalcPost90OppositeTotal.getOrElse("0.00"))}
-
-  def dodInSameTaxYearAsRevaluationDate: Boolean = {
-    CalculationResponse.getTaxYear(dateOfDeath) != 0 &&
-      CalculationResponse.getTaxYear(dateOfDeath) == CalculationResponse.getTaxYear(revaluationDate)
+  def trueCalculation: BigDecimal = calculationPeriods.foldLeft(BigDecimal(0)) { (sum, period) =>
+    sum +
+      BigDecimal(period.dualCalcPost90TrueTotal.getOrElse("0.00"))
   }
 
-  def header(messages : Messages): String = {
+  def oppositeCalculation: BigDecimal = calculationPeriods.foldLeft(BigDecimal(0)) { (sum, period) =>
+    sum +
+      BigDecimal(period.dualCalcPost90OppositeTotal.getOrElse("0.00"))
+  }
 
-    if (calcType == CalculationType.SURVIVOR.toInt && revaluationDate.isDefined) {
+  def dodInSameTaxYearAsRevaluationDate: Boolean =
+    CalculationResponse.getTaxYear(dateOfDeath) != 0 &&
+      CalculationResponse.getTaxYear(dateOfDeath) == CalculationResponse.getTaxYear(revaluationDate)
+
+  def header(messages: Messages): String =
+
+    if calcType == CalculationType.SURVIVOR.toInt && revaluationDate.isDefined then {
       messages("gmp.results.survivor.revaluation.header", formatDate(revaluationDate.get))
-    } else if(calcType == CalculationType.SURVIVOR.toInt && dateOfDeath.isDefined) {
+    } else if calcType == CalculationType.SURVIVOR.toInt && dateOfDeath.isDefined then {
       messages("gmp.results.survivor.header", formatDate(dateOfDeath.get))
-    } else if(calcType == CalculationType.SURVIVOR.toInt) {
+    } else if calcType == CalculationType.SURVIVOR.toInt then {
       messages("gmp.results.survivor.header")
-    } else if(calcType == CalculationType.SPA.toInt && spaDate.isDefined) {
+    } else if calcType == CalculationType.SPA.toInt && spaDate.isDefined then {
       messages("gmp.spa.header", formatDate(spaDate.get))
-    } else if(calcType == CalculationType.PAYABLE_AGE.toInt && payableAgeDate.isDefined) {
+    } else if calcType == CalculationType.PAYABLE_AGE.toInt && payableAgeDate.isDefined then {
       messages("gmp.payable_age.header", formatDate(payableAgeDate.get))
-    } else if(revaluationDate.isEmpty || revaluationUnsuccessful) {
+    } else if revaluationDate.isEmpty || revaluationUnsuccessful then {
       messages("gmp.leaving.scheme.header", formatDate(leavingDate))
     } else {
       messages("gmp.leaving.revalued.header", formatDate(leavingDate))
     }
-  }
 
   def showRateColumn: Boolean = calculationPeriods.size > 1 && revaluationRate.contains("0")
 
@@ -130,10 +133,9 @@ case class CalculationResponse(
 object CalculationResponse {
   implicit val formats: OFormat[CalculationResponse] = Json.format[CalculationResponse]
 
-  def getTaxYear(date: Option[LocalDate]): Int = {
+  def getTaxYear(date: Option[LocalDate]): Int =
     date match {
       case Some(d) => TaxYear.taxYearFor(d).startYear
-      case _ => 0
+      case _       => 0
     }
-  }
 }

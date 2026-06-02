@@ -29,9 +29,9 @@ import play.twirl.api.Html
 
 trait GmpViewSpec extends PlaySpec with JSoupMatchers with GuiceOneServerPerSuite {
 
-  implicit lazy val messagesControllerComponents: Lang = app.injector.instanceOf[MessagesControllerComponents].langs.availables.head
-  implicit val messagesApi: MessagesApi = app.injector.instanceOf[MessagesApi]
-  implicit lazy val messages: Messages = MessagesImpl(messagesControllerComponents, messagesApi)
+  implicit lazy val messagesControllerComponents: Lang        = app.injector.instanceOf[MessagesControllerComponents].langs.availables.head
+  implicit val messagesApi:                       MessagesApi = app.injector.instanceOf[MessagesApi]
+  implicit lazy val messages:                     Messages    = MessagesImpl(messagesControllerComponents, messagesApi)
 
   implicit val applicationConfig: ApplicationConfig = app.injector.instanceOf[ApplicationConfig]
 
@@ -40,41 +40,41 @@ trait GmpViewSpec extends PlaySpec with JSoupMatchers with GuiceOneServerPerSuit
   private val backLink = new CssSelector("a[class=govuk-back-link]")
 
   implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
-  implicit val context: FakeGmpContext.type = FakeGmpContext
+  implicit val context: FakeGmpContext.type                 = FakeGmpContext
 
-  def view: Html
-  def doc: Document = Jsoup.parse(view.toString())
+  def view:            Html
+  def doc:             Document = Jsoup.parse(view.toString())
   def doc(view: Html): Document = Jsoup.parse(view.toString())
 
-  def pageWithTitle(titleText: String): Unit = {
+  def pageWithTitle(titleText: String): Unit =
     "have a static title" in {
       doc.title must include(titleText)
     }
-  }
 
-  def pageWithTableCaption(captionText: String): Unit = {
+  def pageWithTableCaption(captionText: String): Unit =
     s"have a table caption with text: $captionText" in {
       doc must haveTableCaptionWithText(captionText)
     }
-  }
 
-  def pageWithHeader(headerText: String): Unit = {
+  def pageWithHeader(headerText: String): Unit =
     "have a static h1 header" in {
       doc must haveHeadingWithText(headerText)
     }
-  }
 
-  def pageWitStrong(text: String): Unit = {
+  def pageWitStrong(text: String): Unit =
     "have a static strong" in {
       doc must haveHeadingWithText(text)
     }
-  }
 
-  def pageWithH2Header(headerText: String): Unit = {
+  def pageWithH2Header(headerText: String): Unit =
     s"have a static h2 header with text: $headerText" in {
       doc must haveH2HeadingWithText(headerText)
     }
-  }
+
+  def pageWithH3Header(headerText: String): Unit =
+    s"have a static h3 header with text: $headerText" in {
+      doc must haveHeadingH3WithText(headerText)
+    }
 
   def pageWithButtonForm(submitUrl: String, buttonText: String): Unit = {
     "have a form with a submit button or input labelled as buttonText" in {
@@ -85,25 +85,20 @@ trait GmpViewSpec extends PlaySpec with JSoupMatchers with GuiceOneServerPerSuit
     }
   }
 
-  def pageWithBackLink(): Unit = {
+  def pageWithBackLink(): Unit =
     "have a back link" in {
       doc must haveBackLink
     }
-  }
 
-  def pageWithNewBackLink(): Unit = {
+  def pageWithNewBackLink(): Unit =
     "have a back link" in {
       doc must backLink
     }
-  }
 
-  def pageWithJsBackLink(): Unit = {
+  def pageWithJsBackLink(): Unit =
     "have a back link that uses JS for navigation" in {
       val backButton = doc.select("a.govuk-back-link[href=\"#\"]")
       backButton.size mustBe 1
     }
-  }
-
 
 }
-

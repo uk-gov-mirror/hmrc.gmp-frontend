@@ -27,23 +27,21 @@ import views.Views
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class IncorrectlyEncodedController @Inject()( authAction: AuthAction,
-                                              override val authConnector: AuthConnector,
-                                              GMPSessionService: GMPSessionService,
-                                              implicit val config:GmpContext,
-                                              override val messagesControllerComponents: MessagesControllerComponents,
-                                              ac:ApplicationConfig,
-                                              implicit val executionContext: ExecutionContext,
-                                              views: Views
-                                            ) extends GmpPageFlow(authConnector,GMPSessionService,config,messagesControllerComponents,ac){
+class IncorrectlyEncodedController @Inject() (
+  authAction:                                AuthAction,
+  override val authConnector:                AuthConnector,
+  GMPSessionService:                         GMPSessionService,
+  implicit val config:                       GmpContext,
+  override val messagesControllerComponents: MessagesControllerComponents,
+  ac:                                        ApplicationConfig,
+  implicit val executionContext:             ExecutionContext,
+  views:                                     Views
+) extends GmpPageFlow(authConnector, GMPSessionService, config, messagesControllerComponents, ac) {
 
-  def get = authAction.async {
-    implicit request => {
-      Future.successful(
-        InternalServerError(views.incorrectlyEncoded(
-          Messages("gmp.bulk.incorrectlyEncoded"),
-          Messages("gmp.bulk.incorrectlyEncoded.header"))))
-    }
+  def get = authAction.async { implicit request =>
+    Future.successful(
+      InternalServerError(views.incorrectlyEncoded(Messages("gmp.bulk.incorrectlyEncoded"), Messages("gmp.bulk.incorrectlyEncoded.header")))
+    )
   }
 
 }

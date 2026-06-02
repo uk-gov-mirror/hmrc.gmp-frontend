@@ -22,16 +22,16 @@ import connectors.GmpConnector
 import controllers.auth.{AuthAction, FakeAuthAction}
 import forms.PensionDetails_no_longer_used_Form
 import metrics.ApplicationMetrics
-import models._
+import models.*
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito._
+import org.mockito.Mockito.*
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import org.scalatestplus.play.PlaySpec
 import play.api.i18n.{Lang, Messages, MessagesApi, MessagesImpl}
 import play.api.mvc.MessagesControllerComponents
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import services.GMPSessionService
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
@@ -42,25 +42,38 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class PensionDetailsSconControllerSpec extends PlaySpec with GuiceOneServerPerSuite with MockitoSugar {
 
-  val mockAuthConnector = mock[AuthConnector]
+  val mockAuthConnector     = mock[AuthConnector]
   val mockGMPSessionService = mock[GMPSessionService]
-  val mockGmpConnector = mock[GmpConnector]
-  val mockAuthAction = mock[AuthAction]
-  val metrics = app.injector.instanceOf[ApplicationMetrics]
-  val mockpdf = mock[PensionDetails_no_longer_used_Form]
-  implicit val mcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
-  implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
-  implicit val messagesAPI: MessagesApi = app.injector.instanceOf[MessagesApi]
-  implicit val messagesProvider: MessagesImpl = MessagesImpl(Lang("en"), messagesAPI)
-  implicit val ac: ApplicationConfig = app.injector.instanceOf[ApplicationConfig]
-  implicit val gmpSessionCache: GmpSessionCache = app.injector.instanceOf[GmpSessionCache]
+  val mockGmpConnector      = mock[GmpConnector]
+  val mockAuthAction        = mock[AuthAction]
+  val metrics               = app.injector.instanceOf[ApplicationMetrics]
+  val mockpdf               = mock[PensionDetails_no_longer_used_Form]
+  implicit val mcc:              MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
+  implicit val ec:               ExecutionContext             = app.injector.instanceOf[ExecutionContext]
+  implicit val messagesAPI:      MessagesApi                  = app.injector.instanceOf[MessagesApi]
+  implicit val messagesProvider: MessagesImpl                 = MessagesImpl(Lang("en"), messagesAPI)
+  implicit val ac:               ApplicationConfig            = app.injector.instanceOf[ApplicationConfig]
+  implicit val gmpSessionCache:  GmpSessionCache              = app.injector.instanceOf[GmpSessionCache]
   lazy val pensionDetailsForm = new PensionDetails_no_longer_used_Form(mcc)
-  lazy val views = app.injector.instanceOf[Views]
+  lazy val views              = app.injector.instanceOf[Views]
 
   implicit val hc: HeaderCarrier = new HeaderCarrier(sessionId = Some(SessionId(s"session-${UUID.randomUUID}")))
 
-  object TestPensionDetailsController extends PensionDetailsController(FakeAuthAction, mockAuthConnector, mockGmpConnector,mockGMPSessionService,FakeGmpContext, metrics,ac,pensionDetailsForm,mcc,ec,gmpSessionCache,views) {
-  }
+  object TestPensionDetailsController
+      extends PensionDetailsController(
+        FakeAuthAction,
+        mockAuthConnector,
+        mockGmpConnector,
+        mockGMPSessionService,
+        FakeGmpContext,
+        metrics,
+        ac,
+        pensionDetailsForm,
+        mcc,
+        ec,
+        gmpSessionCache,
+        views
+      ) {}
 
   "pension details GET " must {
 
@@ -69,17 +82,17 @@ class PensionDetailsSconControllerSpec extends PlaySpec with GuiceOneServerPerSu
       "respond with ok" in {
         when(mockGMPSessionService.fetchPensionDetails()(using any())).thenReturn(Future.successful(None))
         val result = TestPensionDetailsController.get(FakeRequest())
-            status(result) must equal(OK)
-            contentAsString(result) must include(Messages("gmp.pension_details.header"))
-            contentAsString(result) must include(Messages("gmp.scon"))
-            contentAsString(result) must include(Messages("gmp.signout"))
-            contentAsString(result) must include(Messages("gmp.back.link"))
+        status(result)          must equal(OK)
+        contentAsString(result) must include(Messages("gmp.pension_details.header"))
+        contentAsString(result) must include(Messages("gmp.scon"))
+        contentAsString(result) must include(Messages("gmp.signout"))
+        contentAsString(result) must include(Messages("gmp.back.link"))
       }
 
       "get page containing scon when retrieved" in {
         when(mockGMPSessionService.fetchPensionDetails()(using any())).thenReturn(Future.successful(Some("S1301234T")))
         val result = TestPensionDetailsController.get(FakeRequest())
-            contentAsString(result) must include("S1301234T")
+        contentAsString(result) must include("S1301234T")
       }
     }
   }
@@ -92,72 +105,98 @@ class PensionDetailsSconControllerSpec extends PlaySpec with GuiceOneServerPerSu
 
       "validate scon and store scon and redirect" in {
         when(mockGMPSessionService.cachePensionDetails(any())(using any())).thenReturn(Future.successful(Some(gmpSession)))
-        when(mockGmpConnector.validateScon(any(),any())(using any())).thenReturn(Future.successful(ValidateSconResponse(true)))
-          val result = TestPensionDetailsController.post(FakeRequest().withMethod("POST")
-            .withFormUrlEncodedBody("scon" -> "S1301234T"))
-          status(result) mustBe SEE_OTHER
-      }
-
-      "validate scon with new hip regex pattern" in {
-        val result = TestPensionDetailsController.post(FakeRequest()
-          .withMethod("POST")
-          .withFormUrlEncodedBody("scon" -> "s1301234t"))
+        when(mockGmpConnector.validateScon(any(), any())(using any())).thenReturn(Future.successful(ValidateSconResponse(true)))
+        val result = TestPensionDetailsController.post(
+          FakeRequest()
+            .withMethod("POST")
+            .withFormUrlEncodedBody("scon" -> "S1301234T")
+        )
         status(result) mustBe SEE_OTHER
       }
 
+      "validate scon with new hip regex pattern" in {
+        val result = TestPensionDetailsController.post(
+          FakeRequest()
+            .withMethod("POST")
+            .withFormUrlEncodedBody("scon" -> "s1301234t")
+        )
+        status(result) mustBe SEE_OTHER
+      }
 
       "validate scon with new hip regex pattern with space as prefix" in {
-        val result = TestPensionDetailsController.post(FakeRequest()
-          .withMethod("POST")
-          .withFormUrlEncodedBody("scon" -> " s1301234t"))
+        val result = TestPensionDetailsController.post(
+          FakeRequest()
+            .withMethod("POST")
+            .withFormUrlEncodedBody("scon" -> " s1301234t")
+        )
         status(result) mustBe SEE_OTHER
       }
 
       "validate scon with new hip regex pattern with space in between" in {
-        val result = TestPensionDetailsController.post(FakeRequest()
-          .withMethod("POST")
-          .withFormUrlEncodedBody("scon" -> "s130 1234t"))
+        val result = TestPensionDetailsController.post(
+          FakeRequest()
+            .withMethod("POST")
+            .withFormUrlEncodedBody("scon" -> "s130 1234t")
+        )
         status(result) mustBe SEE_OTHER
       }
 
       "validate scon with new hip regex pattern for invalid scon pattern" in {
-        val result = TestPensionDetailsController.post(FakeRequest()
-          .withMethod("POST")
-          .withFormUrlEncodedBody("scon" -> "s3301234t"))
+        val result = TestPensionDetailsController.post(
+          FakeRequest()
+            .withMethod("POST")
+            .withFormUrlEncodedBody("scon" -> "s3301234t")
+        )
         status(result) mustBe BAD_REQUEST
       }
 
       "respond with bad request missing SCON" in {
-          val result = TestPensionDetailsController.post(FakeRequest().withMethod("POST")
-            .withFormUrlEncodedBody("scon" -> ""))
-          status(result) mustBe BAD_REQUEST
-          contentAsString(result) must include(Messages("scon.error.required"))
+        val result = TestPensionDetailsController.post(
+          FakeRequest()
+            .withMethod("POST")
+            .withFormUrlEncodedBody("scon" -> "")
+        )
+        status(result) mustBe BAD_REQUEST
+        contentAsString(result) must include(Messages("scon.error.required"))
       }
 
       "respond with bad request when scon not validated" in {
-        when(mockGmpConnector.validateScon(any(),any())(using any())).thenReturn(Future.successful(ValidateSconResponse(false)))
-          val result = TestPensionDetailsController.post(FakeRequest().withMethod("POST")
-            .withFormUrlEncodedBody("scon" -> "S1301234T"))
-          status(result) mustBe BAD_REQUEST
-          contentAsString(result) must include(Messages("scon.error.notRecognised"))
-          contentAsString(result) must include(Messages("gmp.scon.message"))
+        when(mockGmpConnector.validateScon(any(), any())(using any())).thenReturn(Future.successful(ValidateSconResponse(false)))
+        val result = TestPensionDetailsController.post(
+          FakeRequest()
+            .withMethod("POST")
+            .withFormUrlEncodedBody("scon" -> "S1301234T")
+        )
+        status(result) mustBe BAD_REQUEST
+        contentAsString(result) must include(Messages("scon.error.notRecognised"))
+        contentAsString(result) must include(Messages("gmp.scon.message"))
       }
 
       "respond with exception when scon service throws exception" in {
         when(mockGMPSessionService.cachePensionDetails(any())(using any())).thenReturn(Future.successful(Some(gmpSession)))
-        when(mockGmpConnector.validateScon(any(),any())(using any())).thenReturn(Future.successful(null))
-          intercept[RuntimeException]{
-            await(TestPensionDetailsController.post(FakeRequest().withMethod("POST")
-              .withFormUrlEncodedBody("scon" -> "S1301234T")))
+        when(mockGmpConnector.validateScon(any(), any())(using any())).thenReturn(Future.successful(null))
+        intercept[RuntimeException] {
+          await(
+            TestPensionDetailsController.post(
+              FakeRequest()
+                .withMethod("POST")
+                .withFormUrlEncodedBody("scon" -> "S1301234T")
+            )
+          )
         }
       }
 
       "respond with exception when cache service throws exception" in {
         when(mockGMPSessionService.cachePensionDetails(any())(using any())).thenReturn(Future.successful(None))
-        when(mockGmpConnector.validateScon(any(),any())(using any())).thenReturn(Future.successful(ValidateSconResponse(true)))
-          intercept[RuntimeException]{
-            await(TestPensionDetailsController.post(FakeRequest().withMethod("POST")
-              .withFormUrlEncodedBody("scon" -> "S1301234T")))
+        when(mockGmpConnector.validateScon(any(), any())(using any())).thenReturn(Future.successful(ValidateSconResponse(true)))
+        intercept[RuntimeException] {
+          await(
+            TestPensionDetailsController.post(
+              FakeRequest()
+                .withMethod("POST")
+                .withFormUrlEncodedBody("scon" -> "S1301234T")
+            )
+          )
         }
       }
 

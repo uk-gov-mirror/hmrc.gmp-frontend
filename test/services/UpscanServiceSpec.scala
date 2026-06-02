@@ -25,7 +25,7 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.inject.bind
-import org.mockito.Mockito._
+import org.mockito.Mockito.*
 import org.mockito.ArgumentMatchers.any
 import org.scalatest.concurrent.ScalaFutures
 import play.api.mvc.Request
@@ -34,7 +34,6 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.SessionId
 
 import scala.concurrent.Future
-
 
 class UpscanServiceSpec extends BaseSpec with GuiceOneAppPerSuite with MockitoSugar with ScalaFutures {
 
@@ -47,19 +46,19 @@ class UpscanServiceSpec extends BaseSpec with GuiceOneAppPerSuite with MockitoSu
   "getUpscanFormDataOds" must {
     "get form data from Upscan Connector with an initiate request" in {
       implicit val request: Request[AnyRef] = FakeRequest("GET", "http://localhost:9941/")
-      val hc = HeaderCarrier(sessionId = Some(SessionId("sessionid")))
-      val callback = controllers.routes.FileUploadController.callback(hc.sessionId.get.value).absoluteURL()
-      val success = controllers.routes.FileUploadController.showResult().absoluteURL()
-      val failure = "http://localhost:9941/guaranteed-minimum-pension/upload-csv/failure"
+      val hc                      = HeaderCarrier(sessionId = Some(SessionId("sessionid")))
+      val callback                = controllers.routes.FileUploadController.callback(hc.sessionId.get.value).absoluteURL()
+      val success                 = controllers.routes.FileUploadController.showResult().absoluteURL()
+      val failure                 = "http://localhost:9941/guaranteed-minimum-pension/upload-csv/failure"
       val expectedInitiateRequest = UpscanInitiateRequest(callback, success, failure)
 
       val upscanInitiateResponse = UpscanInitiateResponse(Reference("reference"), "postTarget", formFields = Map.empty[String, String])
-      val initiateRequestCaptor = ArgumentCaptor.forClass(classOf[UpscanInitiateRequest])
+      val initiateRequestCaptor  = ArgumentCaptor.forClass(classOf[UpscanInitiateRequest])
 
       when(mockUpscanConnector.getUpscanFormData(initiateRequestCaptor.capture())(using any[HeaderCarrier]))
         .thenReturn(Future.successful(upscanInitiateResponse))
 
-      (upscanService.getUpscanFormData()(using hc, request)).futureValue
+      upscanService.getUpscanFormData()(using hc, request).futureValue
 
       initiateRequestCaptor.getValue shouldBe expectedInitiateRequest
     }

@@ -19,7 +19,6 @@ package validation
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-
 class DateValidatorSpec extends AnyFlatSpec with Matchers {
 
   "Validate a date" should "pass with a valid date 1/1/2015" in {
@@ -59,11 +58,11 @@ class DateValidatorSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "return true with a date on GMP start date" in {
-    DateValidate.isOnOrAfterGMPStart("06-04-1978") should be (true)
+    DateValidate.isOnOrAfterGMPStart("06-04-1978") should be(true)
   }
 
   it should "return false for a date before the GMP start date" in {
-    DateValidate.isOnOrAfterGMPStart("04/04/1978") should be (false)
+    DateValidate.isOnOrAfterGMPStart("04/04/1978") should be(false)
   }
 
 }

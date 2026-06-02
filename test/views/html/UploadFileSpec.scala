@@ -23,8 +23,8 @@ import views.ViewHelpers
 
 class UploadFileSpec extends GmpViewSpec {
 
-  val upscanInitiate = UpscanInitiateResponse(Reference("reference"), "download", Map())
-  lazy val layout = app.injector.instanceOf[views.html.Layout]
+  val upscanInitiate  = UpscanInitiateResponse(Reference("reference"), "download", Map())
+  lazy val layout     = app.injector.instanceOf[views.html.Layout]
   lazy val viewHelper = app.injector.instanceOf[ViewHelpers]
   override def view: Html = new views.html.upscan_csv_file_upload(layout, viewHelper)(upscanInitiate)
 
@@ -32,10 +32,11 @@ class UploadFileSpec extends GmpViewSpec {
     behave like pageWithTitle(messages("gmp.fileupload.header"))
     behave like pageWithHeader(messages("gmp.fileupload.header"))
 
-
     "display an explanation text paragraph" in {
-      doc must haveParagraphWithText("The file must contain mandatory information and be in a specific format. " +
-        "To create your file you can download a template and instructions as a ZIP file (3Kb).")
+      doc must haveParagraphWithText(
+        "The file must contain mandatory information and be in a specific format. " +
+          "To create your file you can download a template and instructions as a ZIP file (3Kb)."
+      )
     }
   }
 

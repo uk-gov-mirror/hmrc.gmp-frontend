@@ -19,19 +19,18 @@ package forms
 import com.google.inject.{Inject, Singleton}
 import models.CalculationType
 import play.api.data.Form
-import play.api.data.Forms._
+import play.api.data.Forms.*
 import play.api.i18n.{Messages, MessagesImpl}
 import play.api.mvc.MessagesControllerComponents
 
 @Singleton
-class ScenarioForm @Inject()(mcc: MessagesControllerComponents) {
+class ScenarioForm @Inject() (mcc: MessagesControllerComponents) {
   implicit lazy val messages: Messages = MessagesImpl(mcc.langs.availables.head, mcc.messagesApi)
 
   val scenarioForm = Form(
     mapping(
-      "calcType" -> optional(text).verifying(messages("gmp.error.scenario.mandatory"), {x => {x.isDefined && x.get.matches("[0-4]{1}")}})
+      "calcType" -> optional(text).verifying(messages("gmp.error.scenario.mandatory"), x => x.isDefined && x.get.matches("[0-4]{1}"))
     )(CalculationType.apply)((ct: CalculationType) => Some(ct.calcType))
   )
 
 }
-

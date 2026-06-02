@@ -19,49 +19,73 @@ package views.html
 import models.{CalculationPeriod, CalculationResponse, ContributionsAndEarnings}
 import java.time.LocalDate
 import play.twirl.api.Html
-import uk.gov.hmrc.govukfrontend.views.html.components._
+import uk.gov.hmrc.govukfrontend.views.html.components.*
 import utils.GmpViewSpec
 import views.html.includes.{member_details_result, request_another_button}
 
-class ResultsSpec extends GmpViewSpec{
-  lazy val layout = app.injector.instanceOf[views.html.Layout]
+class ResultsSpec extends GmpViewSpec {
+  lazy val layout               = app.injector.instanceOf[views.html.Layout]
   lazy val requestAnotherButton = app.injector.instanceOf[request_another_button]
-  lazy val memberDetailsResult = app.injector.instanceOf[member_details_result]
-  lazy val govukErrorSummary = app.injector.instanceOf[GovukErrorSummary]
-  lazy val govTable = app.injector.instanceOf[GovukTable]
+  lazy val memberDetailsResult  = app.injector.instanceOf[member_details_result]
+  lazy val govukErrorSummary    = app.injector.instanceOf[GovukErrorSummary]
+  lazy val govTable             = app.injector.instanceOf[GovukTable]
 
-  override def view: Html = new views.html.results(layout, govukErrorSummary,  requestAnotherButton, memberDetailsResult, govTable)( calculationResponse, Some("revalRateSubheader"), Some("survivorSubheader"))
+  override def view: Html = new views.html.results(layout, govukErrorSummary, requestAnotherButton, memberDetailsResult, govTable)(
+    calculationResponse,
+    Some("revalRateSubheader"),
+    Some("survivorSubheader")
+  )
 
-  private val calculationResponse : CalculationResponse = CalculationResponse(
+  private val calculationResponse: CalculationResponse = CalculationResponse(
     name = "name",
     nino = "nino",
     scon = "scon",
     revaluationRate = Some("revaluationRate"),
     revaluationDate = Some(LocalDate.now),
     calculationPeriods = List(
-      CalculationPeriod(Some(LocalDate.now),
-        LocalDate.now(), "gmpTotal",
-        "post", 1, 2, Some(3),
+      CalculationPeriod(
+        Some(LocalDate.now),
+        LocalDate.now(),
+        "gmpTotal",
+        "post",
+        1,
+        2,
+        Some(3),
         Some("string"),
-        Some("string2"), Some(4),
+        Some("string2"),
+        Some(4),
         Some(List(ContributionsAndEarnings(2018, "2000")))
       ),
       CalculationPeriod(
-        Some(LocalDate.now), LocalDate.now(), "gmpTotal", "post", 1, 2, Some(3), Some("string"),
-        Some("string2"), Some(4), Some(List(ContributionsAndEarnings(2018, "2000"))))),
+        Some(LocalDate.now),
+        LocalDate.now(),
+        "gmpTotal",
+        "post",
+        1,
+        2,
+        Some(3),
+        Some("string"),
+        Some("string2"),
+        Some(4),
+        Some(List(ContributionsAndEarnings(2018, "2000")))
+      )
+    ),
     globalErrorCode = 0,
     spaDate = Some(LocalDate.now),
     payableAgeDate = Some(LocalDate.now),
     dateOfDeath = Some(LocalDate.now),
-    dualCalc = true, calcType = 2)
+    dualCalc = true,
+    calcType = 2
+  )
 
   "Results page" must {
     behave like pageWithTitle(messages("gmp.part_problem"))
 
     "have a message" in {
-      doc must haveParagraphWithText("If you do not agree with this result, contact HMRC by creating a new entry in the ‘single queries database’ in the Shared Workspace eRoom.")
+      doc must haveParagraphWithText(
+        "If you do not agree with this result, contact HMRC by creating a new entry in the ‘single queries database’ in the Shared Workspace eRoom."
+      )
     }
   }
-
 
 }
