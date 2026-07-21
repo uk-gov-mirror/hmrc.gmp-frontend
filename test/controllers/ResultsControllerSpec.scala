@@ -1544,9 +1544,11 @@ class ResultsControllerSpec extends PlaySpec with GuiceOneServerPerSuite with Mo
     }
 
     "nino in session" must {
-      "remove spaces when creating request" in {
+      "remove spaces and uppercase when creating request" in {
 
-        val result = TestResultsController.createCalculationRequest(gmpSession4)
+        val result = TestResultsController.createCalculationRequest(
+          gmpSession4.copy(memberDetails = gmpSession4.memberDetails.copy(nino = " " + gmpSession4Nino.toLowerCase.grouped(2).mkString(" ") + " "))
+        )
         result.nino must be(gmpSession4Nino)
       }
 
