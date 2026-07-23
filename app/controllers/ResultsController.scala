@@ -207,7 +207,7 @@ class ResultsController @Inject() (
 
     CalculationRequest(
       gmpSession.scon,
-      gmpSession.memberDetails.nino.replaceAll("\\s", ""),
+      gmpSession.memberDetails.nino.replaceAll("\\s", "").toUpperCase,
       gmpSession.memberDetails.surname,
       gmpSession.memberDetails.firstForename,
       gmpSession.scenario.toInt,
